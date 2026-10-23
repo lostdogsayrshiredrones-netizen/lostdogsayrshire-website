@@ -57,12 +57,21 @@
   .brand img { width: 64px; height: 64px; border-radius: 50%; border: 3px solid var(--yellow); }
   .brand b { display: block; font-size: 1.35rem; font-weight: 900; line-height: 1.15; }
   .brand span { color: var(--soft); font-weight: 600; font-size: .9rem; }
-  .choice { display: flex; align-items: center; gap: 12px; width: 100%; padding: 14px; border: 0; border-radius: 14px;
-    background: #fff; color: var(--deep); font: inherit; font-size: 1.12rem; font-weight: 900; text-align: left;
-    box-shadow: 0 5px 0 var(--deep); cursor: pointer; }
-  .choice.hi { background: var(--yellow); }
+  /* Raised 3D buttons, same style as the website home page */
+  .choice { position: relative; display: flex; align-items: center; gap: 12px; width: 100%; padding: 16px 46px 16px 14px; border: 0; border-radius: 18px;
+    color: var(--deep); font: inherit; font-size: 1.12rem; font-weight: 900; text-align: left; cursor: pointer; -webkit-tap-highlight-color: transparent;
+    background: linear-gradient(180deg, #ffffff 0%, #efeaff 100%);
+    box-shadow: inset 0 2px 0 rgba(255,255,255,.9), inset 0 -3px 0 rgba(62,18,163,.10), 0 7px 0 #a99ad9, 0 12px 20px rgba(20,4,70,.45);
+    transition: transform .08s ease, box-shadow .08s ease; }
+  .choice::after { content: ""; position: absolute; right: 20px; top: 50%; width: 11px; height: 11px; border-top: 4px solid currentColor; border-right: 4px solid currentColor;
+    border-radius: 2px; transform: translateY(-50%) rotate(45deg); opacity: .75; }
+  .choice:active { transform: translateY(6px);
+    box-shadow: inset 0 2px 0 rgba(255,255,255,.9), inset 0 -3px 0 rgba(62,18,163,.10), 0 1px 0 #a99ad9, 0 3px 6px rgba(20,4,70,.4); }
+  .choice.hi { background: linear-gradient(180deg, #fffe7a 0%, #fdf90f 55%, #f1ec00 100%);
+    box-shadow: inset 0 2px 0 rgba(255,255,255,.8), inset 0 -3px 0 rgba(120,110,0,.18), 0 7px 0 #b3ae00, 0 12px 20px rgba(20,4,70,.45); }
+  .choice.hi:active { box-shadow: inset 0 2px 0 rgba(255,255,255,.8), inset 0 -3px 0 rgba(120,110,0,.18), 0 1px 0 #b3ae00, 0 3px 6px rgba(20,4,70,.4); }
   .choice svg { flex-shrink: 0; width: 30px; height: 30px; }
-  .choice:active { transform: translateY(3px); box-shadow: 0 2px 0 var(--deep); }
+  .choice + .choice { margin-top: 6px; }
   .warn { padding: 10px 12px; background: var(--red); border-radius: 12px; font-size: .9rem; font-weight: 700; }
   .dog { display: flex; align-items: center; gap: 12px; width: 100%; padding: 10px; border: 0; border-radius: 12px;
     background: var(--deep); color: #fff; font: inherit; text-align: left; cursor: pointer; }
@@ -215,24 +224,25 @@
     <svg viewBox="0 0 24 24" fill="none" stroke="#5220c4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>I've lost my dog</button>
   <button class="choice" type="button" data-report="loose">
     <svg viewBox="0 0 24 24" fill="none" stroke="#5220c4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>I've seen a loose dog</button>
-  <div class="warn">Please don't pursue or call a loose dog. If a dog is on a road or in danger, call <b>999</b>.</div>
   <button class="choice" type="button" data-report="found">
     <svg viewBox="0 0 24 24" fill="none" stroke="#5220c4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h14V10"/><path d="M10 20v-6h4v6"/></svg>I've found a dog (it's safe with me)</button>
   <button class="choice hi posts-btn" type="button" data-report="posts">
     <svg viewBox="0 0 24 24" fill="none" stroke="#5220c4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 9h10M7 13h6"/></svg>I've seen a dog from your posts</button>
   <h2>Current missing dogs</h2>
-  <div class="dog-list" style="display:flex;flex-direction:column;gap:10px"><p class="foot" style="text-align:left">Loading…</p></div>
-  <p class="foot">Tap a dog if you think you've seen it.<br>Lost Dogs Ayrshire · <a href="tel:07715950588">07715 950588</a> · <a href="report-privacy.html">Privacy</a></p>
+  <button class="choice" type="button" data-go="dogs" id="see-dogs">
+    <svg viewBox="0 0 64 60" fill="#5220c4" aria-hidden="true"><use href="#paw-shape"/></svg>See the current missing dogs</button>
+  <p class="foot">Lost Dogs Ayrshire · <a href="mailto:lostdogsayrshire@gmail.com">lostdogsayrshire@gmail.com</a> · <a href="report-privacy.html">Privacy</a></p>
 </section>
 
 <!-- DOGS WE'RE LOOKING FOR (opened from the website home page) -->
 <section id="dogs" hidden>
+  <button class="back" type="button" data-go="home" id="dogs-back" hidden>&#8592; Back</button>
   <h1 class="banner">Missing dogs</h1>
   <button class="choice hi posts-btn" type="button" data-report="posts">
     <svg viewBox="0 0 24 24" fill="none" stroke="#5220c4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 9h10M7 13h6"/></svg>I've seen a dog from your posts</button>
   <h2>Current missing dogs</h2>
   <div class="dog-list" style="display:flex;flex-direction:column;gap:10px"><p class="foot" style="text-align:left">Loading…</p></div>
-  <p class="foot">Tap a dog if you think you've seen it.<br>Lost Dogs Ayrshire · <a href="tel:07715950588">07715 950588</a> · <a href="report-privacy.html">Privacy</a></p>
+  <p class="foot">Tap a dog if you think you've seen it.<br>Lost Dogs Ayrshire · <a href="mailto:lostdogsayrshire@gmail.com">lostdogsayrshire@gmail.com</a> · <a href="report-privacy.html">Privacy</a></p>
 </section>
 
 <!-- REPORT FORM (one form, fields change with the type) -->
@@ -465,7 +475,10 @@ window.addEventListener('popstate', e => {
 document.addEventListener('click', e => {
   // the form's Back button returns to the screen the person came from
   if (e.target.closest('[data-report],[data-dog]')) $('r-back').setAttribute('data-go', $('dogs').hidden ? 'home' : 'dogs');
-  const g = e.target.closest('[data-go]'); if (g) { show(g.getAttribute('data-go')); return; }
+  const g = e.target.closest('[data-go]'); if (g) {
+    // opened from the report page's own home: give the missing dogs screen a Back button
+    if (g.getAttribute('data-go') === 'dogs' && !$('home').hidden) $('dogs-back').hidden = false;
+    show(g.getAttribute('data-go')); return; }
   const r = e.target.closest('[data-report]'); if (r) { type = r.getAttribute('data-report'); setupForm(); show('report'); return; }
   const d = e.target.closest('[data-dog]'); if (d) { type = 'posts'; setupForm(d.getAttribute('data-dog')); show('report'); }
 });

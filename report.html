@@ -71,6 +71,10 @@
     box-shadow: inset 0 2px 0 rgba(255,255,255,.8), inset 0 -3px 0 rgba(120,110,0,.18), 0 7px 0 #b3ae00, 0 12px 20px rgba(20,4,70,.45); }
   .choice.hi:active { box-shadow: inset 0 2px 0 rgba(255,255,255,.8), inset 0 -3px 0 rgba(120,110,0,.18), 0 1px 0 #b3ae00, 0 3px 6px rgba(20,4,70,.4); }
   .choice svg { flex-shrink: 0; width: 30px; height: 30px; }
+  #dogs-back[hidden] + .banner { margin-top: 56px; }   /* keep the title clear of the Home button */
+  .all-safe { display: flex; flex-direction: column; gap: 8px; padding: 16px; border-radius: 16px; background: #1e6b34; text-align: center; font-weight: 700; }
+  .all-safe b { font-size: 1.3rem; font-weight: 900; color: var(--yellow); }
+  .all-safe .choice { margin-top: 6px; }
   .choice + .choice { margin-top: 6px; }
   .warn { padding: 10px 12px; background: var(--red); border-radius: 12px; font-size: .9rem; font-weight: 700; }
   .dog { display: flex; align-items: center; gap: 12px; width: 100%; padding: 10px; border: 0; border-radius: 12px;
@@ -87,6 +91,11 @@
   .tag.safe { background: #fff; color: #1d6b33; }
   .tag.where { background: #fff; color: var(--deep); }
   .dog .seen.safe { color: #fff; }
+  /* Footer: the same on every page of the website */
+  .site-foot { margin-top: 12px; text-align: center; font-size: .9rem; color: #e9e2ff; line-height: 1.7; }
+  .site-foot .mail { display: inline-block; margin-bottom: 6px; font-size: 1.15rem; font-weight: 900; color: #fff; text-decoration: none; }
+  .site-foot .mail span { color: #fdf90f; }
+  .site-foot a { color: #fdf90f; }
   .foot { font-size: .82rem; color: var(--soft); text-align: center; }
   .back { align-self: flex-start; padding: 8px 18px; border: 3px solid var(--yellow); border-radius: 999px;
     background: transparent; color: var(--yellow); font: inherit; font-weight: 800; font-size: 1.05rem; cursor: pointer; }
@@ -231,18 +240,25 @@
   <h2>Current missing dogs</h2>
   <button class="choice" type="button" data-go="dogs" id="see-dogs">
     <svg viewBox="0 0 64 60" fill="#5220c4" aria-hidden="true"><use href="#paw-shape"/></svg>See the current missing dogs</button>
-  <p class="foot">Lost Dogs Ayrshire · <a href="mailto:lostdogsayrshire@gmail.com">lostdogsayrshire@gmail.com</a> · <a href="report-privacy.html">Privacy</a></p>
+  <footer class="site-foot"><a class="mail" href="mailto:lostdogsayrshire@gmail.com">Email us: <span>lostdogsayrshire@gmail.com</span></a><br><a href="report-privacy.html">Privacy</a> · Lost Dogs Ayrshire</footer>
 </section>
 
 <!-- DOGS WE'RE LOOKING FOR (opened from the website home page) -->
 <section id="dogs" hidden>
   <button class="back" type="button" data-go="home" id="dogs-back" hidden>&#8592; Back</button>
   <h1 class="banner">Missing dogs</h1>
+  <div class="all-safe" id="all-safe" hidden>
+    <b>Good news!</b>
+    <span>There are no dogs we&rsquo;re currently looking for. If you&rsquo;ve lost, seen or found a dog, please use Report a Dog.</span>
+    <button class="choice hi" type="button" data-go="home">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#5220c4" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3L2 20h20z"/><path d="M12 10v4M12 17v.5"/></svg>Report a Dog</button>
+  </div>
   <button class="choice hi posts-btn" type="button" data-report="posts">
     <svg viewBox="0 0 24 24" fill="none" stroke="#5220c4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 9h10M7 13h6"/></svg>I've seen a dog from your posts</button>
   <h2>Current missing dogs</h2>
   <div class="dog-list" style="display:flex;flex-direction:column;gap:10px"><p class="foot" style="text-align:left">Loading…</p></div>
-  <p class="foot">Tap a dog if you think you've seen it.<br>Lost Dogs Ayrshire · <a href="mailto:lostdogsayrshire@gmail.com">lostdogsayrshire@gmail.com</a> · <a href="report-privacy.html">Privacy</a></p>
+  <p class="foot">Tap a dog if you think you've seen it.</p>
+  <footer class="site-foot"><a class="mail" href="mailto:lostdogsayrshire@gmail.com">Email us: <span>lostdogsayrshire@gmail.com</span></a><br><a href="report-privacy.html">Privacy</a> · Lost Dogs Ayrshire</footer>
 </section>
 
 <!-- REPORT FORM (one form, fields change with the type) -->
@@ -419,6 +435,7 @@
   </div>
   <div class="warn" style="width:100%">Urgent? Call Lost Dogs Ayrshire on <a href="tel:07715950588" style="color:#fff"><b>07715 950588</b></a></div>
   <button class="send" type="button" data-go="home" style="width:100%">Send another report</button>
+  <footer class="site-foot"><a class="mail" href="mailto:lostdogsayrshire@gmail.com">Email us: <span>lostdogsayrshire@gmail.com</span></a><br><a href="report-privacy.html">Privacy</a> · Lost Dogs Ayrshire</footer>
 </section>
 
 
@@ -500,8 +517,10 @@ function drawDogs(note) {
 async function loadDogs(tries) {
   try {
     DOGS = ((await publicDogs()).data.dogs || []);
-    drawDogs(DOGS.length ? '' : 'No dogs are listed at the moment. Thank you for looking.');
-    document.querySelectorAll('.posts-btn').forEach(b => { b.hidden = !DOGS.some(d => !d.safe); });
+    const looking = DOGS.some(d => !d.safe);   // any dog people can still report a sighting for?
+    drawDogs('');
+    document.querySelectorAll('.posts-btn').forEach(b => { b.hidden = !looking; });
+    $('all-safe').hidden = looking;   // good-news note when every dog is safe (or none are listed)
     if (!$('report').hidden && type === 'posts') fillPick($('r-pick').querySelector('input:checked') ? $('r-pick').querySelector('input:checked').value : null);
   } catch (e) {
     if ((tries || 0) < 2) return setTimeout(() => loadDogs((tries || 0) + 1), 2500);

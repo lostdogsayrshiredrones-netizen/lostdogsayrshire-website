@@ -71,9 +71,11 @@
   .warn .w1 { font-size: 1.2rem; font-weight: 900; }
   .warn .w2 { font-size: 2rem; font-weight: 900; color: #fff; letter-spacing: .02em; }
   .warn .w3 { margin-top: 2px; font-size: 1rem; font-weight: 700; }
-  footer { margin-top: 8px; text-align: center; font-size: .9rem; color: var(--soft); line-height: 1.7; }
-  footer .call { display: inline-block; margin-bottom: 6px; font-size: 1.15rem; font-weight: 900; color: #fff; text-decoration: none; }
-  footer .call span { color: var(--yellow); }
+  /* Footer: the same on every page of the website */
+  .site-foot { margin-top: 12px; text-align: center; font-size: .9rem; color: #e9e2ff; line-height: 1.7; }
+  .site-foot .mail { display: inline-block; margin-bottom: 6px; font-size: 1.15rem; font-weight: 900; color: #fff; text-decoration: none; }
+  .site-foot .mail span { color: #fdf90f; }
+  .site-foot a { color: #fdf90f; }
 </style>
 </head>
 <body>
@@ -117,10 +119,7 @@
     <span><b>Our Facebook Page</b><small>Latest posts, appeals and good news</small></span>
   </a>
 
-  <footer>
-    <a class="call" href="mailto:lostdogsayrshire@gmail.com">Email us: <span>lostdogsayrshire@gmail.com</span></a><br>
-    <a href="report-privacy.html">Privacy</a> · Lost Dogs Ayrshire
-  </footer>
+  <footer class="site-foot"><a class="mail" href="mailto:lostdogsayrshire@gmail.com">Email us: <span>lostdogsayrshire@gmail.com</span></a><br><a href="report-privacy.html">Privacy</a> · Lost Dogs Ayrshire</footer>
 </main>
 </body>
 </html>

@@ -23,7 +23,14 @@
   a { color: var(--purple); font-weight: 700; }
   .box { background: #fff; border: 3px solid var(--purple); border-radius: 14px; padding: 4px 18px 10px; margin-top: 28px; }
   .back { display: inline-block; margin-top: 20px; padding: 10px 18px; border-radius: 999px; background: var(--purple); color: #fff; text-decoration: none; font-weight: 800; }
-  footer { color: #5b4f80; font-size: .9rem; margin-top: 36px; }
+  .updated { color: #5b4f80; font-size: .9rem; margin-top: 36px; }
+  .foot-band { background: var(--purple); border-top: 6px solid var(--yellow); padding: 18px 16px calc(22px + env(safe-area-inset-bottom)); }
+  /* Footer: the same on every page of the website */
+  .site-foot { margin-top: 0; text-align: center; font-size: .9rem; color: #e9e2ff; line-height: 1.7; }
+  .site-foot .mail { display: inline-block; margin-bottom: 6px; font-size: 1.15rem; font-weight: 900; color: #fff; text-decoration: none; }
+  .site-foot .mail span { color: #fdf90f; }
+  .site-foot a { color: #fdf90f; }
+
 </style>
 </head>
 <body>
@@ -80,8 +87,9 @@
     <p>Phone Lost Dogs Ayrshire on <b><a href="tel:07715950588">07715 950588</a></b>, or send a message to the Lost Dogs Ayrshire Facebook Page. Tell us roughly when you sent the report and the phone number you gave, and we will delete it and let you know.</p>
   </div>
 
-  <footer>Lost Dogs Ayrshire · Last updated 19 October 2026</footer>
+  <p class="updated">Last updated 19 October 2026</p>
 </main>
+<div class="foot-band"><footer class="site-foot"><a class="mail" href="mailto:lostdogsayrshire@gmail.com">Email us: <span>lostdogsayrshire@gmail.com</span></a><br><a href="report-privacy.html">Privacy</a> · Lost Dogs Ayrshire</footer></div>
 <a class="home-fab" href="https://lostdogsayrshire.org.uk/" aria-label="Home page"><svg viewBox="0 0 24 24" fill="none" stroke="#5220c4" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h5v-6h4v6h5V10"/></svg>Home</a>
 </body>
 </html>

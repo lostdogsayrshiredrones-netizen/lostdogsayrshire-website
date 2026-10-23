@@ -12,16 +12,13 @@
   header { background: var(--purple); color: #fff; border-bottom: 6px solid var(--yellow); padding: calc(28px + env(safe-area-inset-top)) 16px 28px; }
   header p { margin: 0; color: var(--yellow); font-weight: 800; letter-spacing: .1em; text-transform: uppercase; font-size: .85rem; }
   header h1 { margin: 6px 0 0; font-size: 1.9rem; line-height: 1.15; }
-  main { max-width: 760px; margin: 0 auto; padding: 40px 16px 48px; }
-  .home-fab { position: fixed; right: 14px; top: calc(34px + env(safe-area-inset-top)); z-index: 2000; width: 56px; height: 56px; border-radius: 50%;
-    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px; background: #fdf90f; color: #5220c4;
-    text-decoration: none; font-size: .72rem; font-weight: 900; text-transform: uppercase; box-shadow: 0 0 0 3px #5220c4, 0 6px 16px rgba(0,0,0,.4); }
-  .home-fab svg { width: 26px; height: 26px; }
+  main { max-width: 760px; margin: 0 auto; padding: 8px 16px 48px; }
   h2 { color: var(--deep); font-size: 1.25rem; margin: 28px 0 6px; }
   ul { padding-left: 22px; }
   li { margin-bottom: 6px; }
   a { color: var(--purple); font-weight: 700; }
   .box { background: #fff; border: 3px solid var(--purple); border-radius: 14px; padding: 4px 18px 10px; margin-top: 28px; }
+  .toprow { display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
   .back { display: inline-block; margin-top: 20px; padding: 10px 18px; border-radius: 999px; background: var(--purple); color: #fff; text-decoration: none; font-weight: 800; }
   .updated { color: #5b4f80; font-size: .9rem; margin-top: 36px; }
   .foot-band { background: var(--purple); border-top: 6px solid var(--yellow); padding: 18px 16px calc(22px + env(safe-area-inset-bottom)); }
@@ -41,7 +38,7 @@
   </div>
 </header>
 <main>
-  <a class="back" href="report.html">&#8592; Back to Report a Dog</a>
+  <div class="toprow"><a class="back" href="report.html">&#8592; Back to Report a Dog</a><a class="back" href="./"><svg viewBox="0 0 24 24" width="18" height="18" style="vertical-align:-3px;margin-right:6px" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h5v-6h4v6h5V10"/></svg>Home</a></div>
 
   <p>Lost Dogs Ayrshire is a volunteer group that helps find missing dogs in Ayrshire. This page explains what happens to the information you give us when you use our <b>Report a Dog</b> page to tell us about a lost, loose or found dog, or that you have seen one of the dogs we are looking for.</p>
 
@@ -89,7 +86,6 @@
 
   <p class="updated">Last updated 19 October 2026</p>
 </main>
-<div class="foot-band"><footer class="site-foot"><a class="mail" href="mailto:lostdogsayrshire@gmail.com">Email us: <span>lostdogsayrshire@gmail.com</span></a><br><a href="report-privacy.html">Privacy</a> · Lost Dogs Ayrshire</footer></div>
-<a class="home-fab" href="https://lostdogsayrshire.org.uk/" aria-label="Home page"><svg viewBox="0 0 24 24" fill="none" stroke="#5220c4" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h5v-6h4v6h5V10"/></svg>Home</a>
+<div class="foot-band"><footer class="site-foot"><a class="mail" href="mailto:lostdogsayrshire@gmail.com">Email us: <span>lostdogsayrshire@gmail.com</span></a><br><a href="./">Home</a> · <a href="report-privacy.html">Privacy</a> · Lost Dogs Ayrshire</footer></div>
 </body>
 </html>

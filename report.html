@@ -21,7 +21,8 @@
   /* Same header as the volunteer app's home screen */
   body::before { content: ""; position: fixed; inset: 0; z-index: -1;
     background: radial-gradient(120% 60% at 50% 0%, var(--deep) 0%, rgba(62,18,163,0) 70%), var(--purple); }
-  .hero { position: relative; text-align: center; margin-bottom: 6px; }
+  .hero { position: relative; margin-top: 50px; text-align: center; margin-bottom: 6px; }   /* room for the Home button above the logo */
+  #dogs-back:not([hidden]) + .hero { margin-top: 4px; }
   .hero .paw { position: absolute; top: 6px; width: 64px; fill: #7f52de; }
   .hero .paw.left { left: 0; transform: rotate(-14deg); }
   .hero .paw.right { display: none; }   /* the Home button sits here */
@@ -41,12 +42,11 @@
   body { margin: 0; min-height: 100vh; background: transparent; color: #fff;
     font: 16px/1.45 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     padding-bottom: calc(24px + env(safe-area-inset-bottom)); }
-  main { max-width: 560px; margin: 0 auto; padding: calc(40px + env(safe-area-inset-top)) 16px calc(28px + env(safe-area-inset-bottom)); }
+  main { position: relative; max-width: 560px; margin: 0 auto; padding: calc(18px + env(safe-area-inset-top)) 16px calc(28px + env(safe-area-inset-bottom)); }
+  /* Home: a pill in the top right corner, level with the Back button (it scrolls with the page) */
+  .home-pill { position: absolute; right: 16px; top: calc(18px + env(safe-area-inset-top)); z-index: 5; display: inline-flex; align-items: center; gap: 6px;
+    padding: 8px 16px; border: 3px solid var(--yellow); border-radius: 999px; color: var(--yellow); font-weight: 800; font-size: 1.05rem; text-decoration: none; }
   /* Home button: always in the bottom corner, goes to the website home page */
-  .home-fab { position: fixed; right: 14px; top: calc(34px + env(safe-area-inset-top)); z-index: 2000; width: 56px; height: 56px; border-radius: 50%;
-    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px; background: var(--yellow); color: var(--purple);
-    text-decoration: none; font-size: .72rem; font-weight: 900; text-transform: uppercase; box-shadow: 0 0 0 3px var(--purple), 0 6px 16px rgba(0,0,0,.4); }
-  .home-fab svg { width: 26px; height: 26px; }
   [hidden] { display: none !important; }
   section { display: flex; flex-direction: column; gap: 12px; }
   a { color: var(--yellow); }
@@ -71,7 +71,6 @@
     box-shadow: inset 0 2px 0 rgba(255,255,255,.8), inset 0 -3px 0 rgba(120,110,0,.18), 0 7px 0 #b3ae00, 0 12px 20px rgba(20,4,70,.45); }
   .choice.hi:active { box-shadow: inset 0 2px 0 rgba(255,255,255,.8), inset 0 -3px 0 rgba(120,110,0,.18), 0 1px 0 #b3ae00, 0 3px 6px rgba(20,4,70,.4); }
   .choice svg { flex-shrink: 0; width: 30px; height: 30px; }
-  #dogs-back[hidden] + .banner { margin-top: 56px; }   /* keep the title clear of the Home button */
   .all-safe { display: flex; flex-direction: column; gap: 8px; padding: 16px; border-radius: 16px; background: #1e6b34; text-align: center; font-weight: 700; }
   .all-safe b { font-size: 1.3rem; font-weight: 900; color: var(--yellow); }
   .all-safe .choice { margin-top: 6px; }
@@ -211,6 +210,7 @@
 </head>
 <body>
 <main>
+<a class="home-pill" href="./" aria-label="Home page"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h5v-6h4v6h5V10"/></svg>Home</a>
 
 <!-- HOME -->
 <section id="home">
@@ -240,13 +240,23 @@
   <h2>Current missing dogs</h2>
   <button class="choice" type="button" data-go="dogs" id="see-dogs">
     <svg viewBox="0 0 64 60" fill="#5220c4" aria-hidden="true"><use href="#paw-shape"/></svg>See the current missing dogs</button>
-  <footer class="site-foot"><a class="mail" href="mailto:lostdogsayrshire@gmail.com">Email us: <span>lostdogsayrshire@gmail.com</span></a><br><a href="report-privacy.html">Privacy</a> · Lost Dogs Ayrshire</footer>
+  <footer class="site-foot"><a class="mail" href="mailto:lostdogsayrshire@gmail.com">Email us: <span>lostdogsayrshire@gmail.com</span></a><br><a href="./">Home</a> · <a href="report-privacy.html">Privacy</a> · Lost Dogs Ayrshire</footer>
 </section>
 
 <!-- DOGS WE'RE LOOKING FOR (opened from the website home page) -->
 <section id="dogs" hidden>
   <button class="back" type="button" data-go="home" id="dogs-back" hidden>&#8592; Back</button>
-  <h1 class="banner">Missing dogs</h1>
+  <header class="hero">
+    <svg class="paw left" viewBox="0 0 64 60" aria-hidden="true"><use href="#paw-shape"/></svg>
+    <svg class="paw right" viewBox="0 0 64 60" aria-hidden="true"><use href="#paw-shape"/></svg>
+    <div class="logo-row"><img class="logo" alt="Lost Dogs Ayrshire logo" id="dogs-logo"></div>
+    <p class="hero-title"><span class="hero-banner">Lost Dogs</span><span class="hero-place">Ayrshire</span></p>
+    <p class="strap">Let&rsquo;s help get them home safe</p>
+    <div class="divider" aria-hidden="true">
+      <svg viewBox="0 0 64 60"><path fill="#fdf90f" d="M32 58C12 44 2 32 2 19 2 9 9 2 18 2c6 0 11 3 14 8 3-5 8-8 14-8 9 0 16 7 16 17 0 13-10 25-30 39z"/><g fill="#5220c4" transform="translate(16 11) scale(.5)"><use href="#paw-shape"/></g></svg>
+    </div>
+  </header>
+  <h2 class="report-head">Missing dogs</h2>
   <div class="all-safe" id="all-safe" hidden>
     <b>Good news!</b>
     <span>There are no dogs we&rsquo;re currently looking for. If you&rsquo;ve lost, seen or found a dog, please use Report a Dog.</span>
@@ -255,10 +265,9 @@
   </div>
   <button class="choice hi posts-btn" type="button" data-report="posts">
     <svg viewBox="0 0 24 24" fill="none" stroke="#5220c4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 9h10M7 13h6"/></svg>I've seen a dog from your posts</button>
-  <h2>Current missing dogs</h2>
   <div class="dog-list" style="display:flex;flex-direction:column;gap:10px"><p class="foot" style="text-align:left">Loading…</p></div>
   <p class="foot">Tap a dog if you think you've seen it.</p>
-  <footer class="site-foot"><a class="mail" href="mailto:lostdogsayrshire@gmail.com">Email us: <span>lostdogsayrshire@gmail.com</span></a><br><a href="report-privacy.html">Privacy</a> · Lost Dogs Ayrshire</footer>
+  <footer class="site-foot"><a class="mail" href="mailto:lostdogsayrshire@gmail.com">Email us: <span>lostdogsayrshire@gmail.com</span></a><br><a href="./">Home</a> · <a href="report-privacy.html">Privacy</a> · Lost Dogs Ayrshire</footer>
 </section>
 
 <!-- REPORT FORM (one form, fields change with the type) -->
@@ -435,12 +444,11 @@
   </div>
   <div class="warn" style="width:100%">Urgent? Call Lost Dogs Ayrshire on <a href="tel:07715950588" style="color:#fff"><b>07715 950588</b></a></div>
   <button class="send" type="button" data-go="home" style="width:100%">Send another report</button>
-  <footer class="site-foot"><a class="mail" href="mailto:lostdogsayrshire@gmail.com">Email us: <span>lostdogsayrshire@gmail.com</span></a><br><a href="report-privacy.html">Privacy</a> · Lost Dogs Ayrshire</footer>
+  <footer class="site-foot"><a class="mail" href="mailto:lostdogsayrshire@gmail.com">Email us: <span>lostdogsayrshire@gmail.com</span></a><br><a href="./">Home</a> · <a href="report-privacy.html">Privacy</a> · Lost Dogs Ayrshire</footer>
 </section>
 
 
 </main>
-<a class="home-fab" href="https://lostdogsayrshire.org.uk/" aria-label="Home page"><svg viewBox="0 0 24 24" fill="none" stroke="#5220c4" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h5v-6h4v6h5V10"/></svg>Home</a>
 
 <script type="module">
 // Lost Dogs Ayrshire: public reporting page.
@@ -808,6 +816,7 @@ $('t-poster-open').addEventListener('click', () => { $('poster-full-img').src = 
 $('poster-close').addEventListener('click', () => { $('poster-full').hidden = true; document.body.classList.remove('map-open'); });
 
 // ---------- start ----------
+$('dogs-logo').src = document.querySelector('#home .logo').src;   // same logo, stored once
 // report.html#dogs opens straight on the missing dogs screen
 if (location.hash === '#dogs') { history.replaceState({ s: 'dogs' }, '', location.pathname + '#dogs'); show('dogs', false); }
 else history.replaceState({ s: 'home' }, '', location.pathname);

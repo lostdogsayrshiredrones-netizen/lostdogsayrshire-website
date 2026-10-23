@@ -67,7 +67,10 @@
     box-shadow: inset 0 2px 0 rgba(255,255,255,.35), inset 0 -3px 0 rgba(0,0,0,.12), 0 7px 0 #0a4ea8, 0 12px 20px rgba(20,4,70,.45); }
   .go.fb:active { box-shadow: inset 0 2px 0 rgba(255,255,255,.35), inset 0 -3px 0 rgba(0,0,0,.12), 0 1px 0 #0a4ea8, 0 3px 6px rgba(20,4,70,.4); }
   .warn { padding: 12px 14px; border-radius: 12px; background: var(--red); font-weight: 700; text-align: center; }
-  .warn b { display: block; font-size: 1.15rem; }
+  .warn { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 14px; line-height: 1.25; }
+  .warn .w1 { font-size: 1.2rem; font-weight: 900; }
+  .warn .w2 { font-size: 2rem; font-weight: 900; color: #fff; letter-spacing: .02em; }
+  .warn .w3 { margin-top: 2px; font-size: 1rem; font-weight: 700; }
   footer { margin-top: 8px; text-align: center; font-size: .9rem; color: var(--soft); line-height: 1.7; }
   footer .call { display: inline-block; margin-bottom: 6px; font-size: 1.15rem; font-weight: 900; color: #fff; text-decoration: none; }
   footer .call span { color: var(--yellow); }
@@ -97,7 +100,7 @@
     <span><b>Report a dog</b><small>Lost, loose or found a dog? Or seen one of ours? Tell us here.</small></span>
   </a>
 
-  <div class="warn"><b>Dog in danger? Call 999.</b>Please don&rsquo;t pursue or call a loose dog.</div>
+  <div class="warn"><span class="w1">Dog or Person in Danger?</span><span class="w2">Call 999</span><span class="w3">Please don&rsquo;t pursue or call a loose dog.</span></div>
 
   <a class="go" href="report.html#dogs">
     <svg viewBox="0 0 64 60" fill="#5220c4" aria-hidden="true"><use href="#paw-shape"/></svg>

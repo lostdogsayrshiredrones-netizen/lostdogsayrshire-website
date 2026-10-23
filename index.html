@@ -52,6 +52,7 @@
   .go span { display: flex; flex-direction: column; line-height: 1.25; }
   .go b { font-size: 1.2rem; font-weight: 900; }
   .go small { font-size: .9rem; font-weight: 600; opacity: .85; }
+  .go .plain { font-size: 1.1rem; font-weight: 800; }
   .go.main { background: var(--yellow); padding: 20px 16px; }
   .go.main b { font-size: 1.45rem; text-transform: uppercase; }
   .go.fb { background: var(--fb); color: #fff; box-shadow: 0 5px 0 #0b5bc4; }
@@ -89,9 +90,9 @@
 
   <div class="warn"><b>Dog in danger? Call 999.</b>Please don&rsquo;t pursue or call a loose dog.</div>
 
-  <a class="go" href="report.html">
+  <a class="go" href="report.html#dogs">
     <svg viewBox="0 0 64 60" fill="#5220c4" aria-hidden="true"><use href="#paw-shape"/></svg>
-    <span><b>Dogs we&rsquo;re looking for</b><small>See the current missing dogs, and tell us if you&rsquo;ve seen one</small></span>
+    <span class="plain">See the current missing dogs, and tell us if you&rsquo;ve seen one</span>
   </a>
 
   <a class="go" href="useful-numbers.html">

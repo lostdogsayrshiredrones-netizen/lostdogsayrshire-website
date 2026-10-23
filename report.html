@@ -41,7 +41,12 @@
   body { margin: 0; min-height: 100vh; background: transparent; color: #fff;
     font: 16px/1.45 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     padding-bottom: calc(24px + env(safe-area-inset-bottom)); }
-  main { max-width: 560px; margin: 0 auto; padding: calc(18px + env(safe-area-inset-top)) 16px 24px; }
+  main { max-width: 560px; margin: 0 auto; padding: calc(18px + env(safe-area-inset-top)) 16px calc(96px + env(safe-area-inset-bottom)); }
+  /* Home button: always in the bottom corner, goes to the website home page */
+  .home-fab { position: fixed; right: 16px; bottom: calc(16px + env(safe-area-inset-bottom)); z-index: 2000; width: 64px; height: 64px; border-radius: 50%;
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px; background: var(--yellow); color: var(--purple);
+    text-decoration: none; font-size: .72rem; font-weight: 900; text-transform: uppercase; box-shadow: 0 0 0 3px var(--purple), 0 6px 16px rgba(0,0,0,.4); }
+  .home-fab svg { width: 28px; height: 28px; }
   [hidden] { display: none !important; }
   section { display: flex; flex-direction: column; gap: 12px; }
   a { color: var(--yellow); }
@@ -213,16 +218,26 @@
   <div class="warn">Please don't pursue or call a loose dog. If a dog is on a road or in danger, call <b>999</b>.</div>
   <button class="choice" type="button" data-report="found">
     <svg viewBox="0 0 24 24" fill="none" stroke="#5220c4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h14V10"/><path d="M10 20v-6h4v6"/></svg>I've found a dog (it's safe with me)</button>
-  <button class="choice hi" type="button" data-report="posts" id="posts-btn">
+  <button class="choice hi posts-btn" type="button" data-report="posts">
     <svg viewBox="0 0 24 24" fill="none" stroke="#5220c4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 9h10M7 13h6"/></svg>I've seen a dog from your posts</button>
   <h2>Current missing dogs</h2>
-  <div id="dog-list" style="display:flex;flex-direction:column;gap:10px"><p class="foot" style="text-align:left">Loading…</p></div>
+  <div class="dog-list" style="display:flex;flex-direction:column;gap:10px"><p class="foot" style="text-align:left">Loading…</p></div>
+  <p class="foot">Tap a dog if you think you've seen it.<br>Lost Dogs Ayrshire · <a href="tel:07715950588">07715 950588</a> · <a href="report-privacy.html">Privacy</a></p>
+</section>
+
+<!-- DOGS WE'RE LOOKING FOR (opened from the website home page) -->
+<section id="dogs" hidden>
+  <h1 class="banner">Missing dogs</h1>
+  <button class="choice hi posts-btn" type="button" data-report="posts">
+    <svg viewBox="0 0 24 24" fill="none" stroke="#5220c4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 9h10M7 13h6"/></svg>I've seen a dog from your posts</button>
+  <h2>Current missing dogs</h2>
+  <div class="dog-list" style="display:flex;flex-direction:column;gap:10px"><p class="foot" style="text-align:left">Loading…</p></div>
   <p class="foot">Tap a dog if you think you've seen it.<br>Lost Dogs Ayrshire · <a href="tel:07715950588">07715 950588</a> · <a href="report-privacy.html">Privacy</a></p>
 </section>
 
 <!-- REPORT FORM (one form, fields change with the type) -->
 <section id="report" hidden>
-  <button class="back" type="button" data-go="home">&#8592; Back</button>
+  <button class="back" type="button" data-go="home" id="r-back">&#8592; Back</button>
   <h1 class="banner" id="r-title">Report</h1>
   <form id="r-form" novalidate style="display:flex;flex-direction:column;gap:12px">
 
@@ -398,6 +413,7 @@
 
 
 </main>
+<a class="home-fab" href="https://lostdogsayrshire.org.uk/" aria-label="Home page"><svg viewBox="0 0 24 24" fill="none" stroke="#5220c4" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h5v-6h4v6h5V10"/></svg>Home</a>
 
 <script type="module">
 // Lost Dogs Ayrshire: public reporting page.
@@ -435,8 +451,8 @@ let DOGS = [], type = null, photo = null, thumb = null, pinLatLng = null, map = 
 // ---------- screens ----------
 function show(id, push) {
   if ($('r-map').classList.contains('full')) setFull(false);
-  if (id === 'home') clearDraft();   // they chose to leave the form
-  ['home', 'report', 'thanks'].forEach(s => { $(s).hidden = s !== id; });
+  if (id === 'home' || id === 'dogs') clearDraft();   // they chose to leave the form
+  ['home', 'dogs', 'report', 'thanks'].forEach(s => { $(s).hidden = s !== id; });
   if (push !== false) history.pushState({ s: id, t: type }, '', '#' + id + (id === 'report' ? '-' + type : ''));
   window.scrollTo(0, 0);
   if (id === 'report') setTimeout(startMap, 30);
@@ -447,6 +463,8 @@ window.addEventListener('popstate', e => {
   show(s === 'thanks' ? 'home' : s, false);
 });
 document.addEventListener('click', e => {
+  // the form's Back button returns to the screen the person came from
+  if (e.target.closest('[data-report],[data-dog]')) $('r-back').setAttribute('data-go', $('dogs').hidden ? 'home' : 'dogs');
   const g = e.target.closest('[data-go]'); if (g) { show(g.getAttribute('data-go')); return; }
   const r = e.target.closest('[data-report]'); if (r) { type = r.getAttribute('data-report'); setupForm(); show('report'); return; }
   const d = e.target.closest('[data-dog]'); if (d) { type = 'posts'; setupForm(d.getAttribute('data-dog')); show('report'); }
@@ -455,7 +473,7 @@ document.addEventListener('click', e => {
 // ---------- the dogs we are looking for ----------
 const dogPic = d => d.thumb ? '<img alt="" src="' + esc(d.thumb) + '">' : '<span class="nophoto">No photo</span>';
 function drawDogs(note) {
-  $('dog-list').innerHTML = note ? '<p class="foot" style="text-align:left">' + esc(note) + '</p>'
+  const html = note ? '<p class="foot" style="text-align:left">' + esc(note) + '</p>'
     : DOGS.map(d => d.safe
       ? '<div class="dog safe">' + dogPic(d) +
         '<span><b>Name: ' + esc(d.name) + '</b>' + (d.area ? '<small>' + esc(d.area) + '</small>' : '') + '<span class="tag safe">' + esc(d.statusLabel) + '</span></span>' +
@@ -464,12 +482,13 @@ function drawDogs(note) {
         '<span><b>Name: ' + esc(d.name) + '</b>' + (d.area ? '<small>' + esc(d.area) + '</small>' : '') + '<span class="tag">' + esc(d.statusLabel) + '</span>' +
         (d.foundWhere ? ' <span class="tag where">' + esc(d.foundWhere) + '</span>' : '') + '</span>' +
         '<span class="seen">Seen<br>this dog?</span></button>').join('');
+  document.querySelectorAll('.dog-list').forEach(el => { el.innerHTML = html; });
 }
 async function loadDogs(tries) {
   try {
     DOGS = ((await publicDogs()).data.dogs || []);
     drawDogs(DOGS.length ? '' : 'No dogs are listed at the moment. Thank you for looking.');
-    $('posts-btn').hidden = !DOGS.some(d => !d.safe);
+    document.querySelectorAll('.posts-btn').forEach(b => { b.hidden = !DOGS.some(d => !d.safe); });
     if (!$('report').hidden && type === 'posts') fillPick($('r-pick').querySelector('input:checked') ? $('r-pick').querySelector('input:checked').value : null);
   } catch (e) {
     if ((tries || 0) < 2) return setTimeout(() => loadDogs((tries || 0) + 1), 2500);
@@ -757,7 +776,9 @@ $('t-poster-open').addEventListener('click', () => { $('poster-full-img').src = 
 $('poster-close').addEventListener('click', () => { $('poster-full').hidden = true; document.body.classList.remove('map-open'); });
 
 // ---------- start ----------
-history.replaceState({ s: 'home' }, '', location.pathname);
+// report.html#dogs opens straight on the missing dogs screen
+if (location.hash === '#dogs') { history.replaceState({ s: 'dogs' }, '', location.pathname + '#dogs'); show('dogs', false); }
+else history.replaceState({ s: 'home' }, '', location.pathname);
 loadDogs();
 restoreDraft();
 </script>

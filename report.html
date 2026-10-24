@@ -25,7 +25,7 @@
   #dogs-back:not([hidden]) + .hero { margin-top: 4px; }
   .hero .paw { position: absolute; top: 6px; width: 64px; fill: #7f52de; }
   .hero .paw.left { left: 0; transform: rotate(-14deg); }
-  .hero .paw.right { display: none; }   /* the Home button sits here */
+  .hero .paw.right { right: 0; transform: rotate(14deg); }
   .logo-row { display: flex; align-items: flex-end; gap: 10px; }
   .logo-row::before, .logo-row::after { content: ""; flex: 1; height: 4px; margin-bottom: 14px; border-radius: 2px; background: var(--yellow); }
   .logo { width: 150px; height: 150px; display: block; border-radius: 50%; box-shadow: 0 0 0 4px var(--yellow), 0 8px 22px rgba(0,0,0,.35); }
@@ -806,7 +806,10 @@ $('r-form').addEventListener('submit', async e => {
     const m = $('r-msg');
     m.textContent = /invalid-argument|resource-exhausted/.test(code) && err.message ? err.message
       : 'Your report could not be sent. Check your signal and try again, or phone us on 07715 950588.';
-    m.hidden = false; m.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    m.hidden = false;
+    // The automatic photo check refused the photo: take it off so they can choose another, or send without one.
+    if (/photo check/i.test(m.textContent)) { setPhoto(null, null); $('r-photo-btn').scrollIntoView({ behavior: 'smooth', block: 'center' }); }
+    else m.scrollIntoView({ behavior: 'smooth', block: 'center' });
   }
   btn.disabled = false; btn.textContent = T.send;
 });

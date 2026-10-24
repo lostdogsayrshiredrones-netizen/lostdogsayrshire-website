@@ -78,6 +78,7 @@
   .warn { padding: 10px 12px; background: var(--red); border-radius: 12px; font-size: .9rem; font-weight: 700; }
   .dog { display: flex; align-items: center; gap: 12px; width: 100%; padding: 10px; border: 0; border-radius: 12px;
     background: var(--deep); color: #fff; font: inherit; text-align: left; cursor: pointer; }
+  .dog img.marked { background: #3e12a3; }
   .dog img, .dog .nophoto { width: 72px; height: 72px; flex-shrink: 0; object-fit: cover; border-radius: 10px; border: 2px solid var(--yellow); }
   .dog .nophoto { display: flex; align-items: center; justify-content: center; font-size: .75rem; color: var(--soft); border-style: dashed; }
   .dog b { display: block; font-size: 1.05rem; }
@@ -100,7 +101,7 @@
     background: transparent; color: var(--yellow); font: inherit; font-weight: 800; font-size: 1.05rem; cursor: pointer; }
   label.f { font-weight: 800; font-size: .95rem; }
   label.f .opt { font-weight: 600; color: var(--soft); }
-  input[type=text], input[type=tel], input[type=date], input[type=time], textarea, select {
+  input[type=text], input[type=search], input[type=tel], input[type=date], input[type=time], textarea, select {
     width: 100%; padding: 12px; border: 3px solid var(--yellow); border-radius: 12px; background: #fff; color: #1a1a1a;
     font: inherit; font-size: 16px; min-width: 0; }
   textarea { resize: vertical; min-height: 90px; }
@@ -147,6 +148,19 @@
   .photo-btn input { position: absolute; width: 1px; height: 1px; opacity: 0; }
   label.f .opt, .opt { font-weight: 600; color: var(--soft); }
   .photo-prev { display: flex; align-items: center; gap: 10px; }
+  .photo-side { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; }
+  .photo-status { font-weight: 900; font-size: .95rem; }
+  .photo-status.checking { color: #e9e2ff; }
+  .photo-status.ok { color: #7dff9c; }
+  .photo-no { display: flex; flex-direction: column; gap: 4px; margin-top: 10px; padding: 12px 14px; border-radius: 12px; background: var(--red); font-weight: 700; }
+  .photo-no b { font-size: 1.05rem; }
+  .find-row { display: flex; gap: 8px; margin: 6px 0 8px; }
+  .find-row input { flex: 1 1 auto; min-width: 0; -webkit-appearance: none; appearance: none; }
+  .find-row button { flex-shrink: 0; padding: 0 16px; border: 0; border-radius: 12px; background: var(--yellow); color: var(--purple); font: inherit; font-weight: 900; }
+  .find-list { display: flex; flex-direction: column; gap: 6px; margin-bottom: 8px; }
+  .find-list button { padding: 10px 12px; border: 2px solid var(--yellow); border-radius: 10px; background: rgba(255,255,255,.08); color: #fff; font: inherit; font-size: .95rem; font-weight: 700; text-align: left; }
+  .find-msg { margin: 0 0 8px; font-size: .92rem; font-weight: 700; color: #e9e2ff; }
+  .find-msg.ok { color: var(--yellow); }
   .photo-prev img { width: 96px; height: 96px; object-fit: cover; border-radius: 10px; border: 3px solid var(--yellow); }
   .photo-prev button { padding: 8px 12px; border: 2px solid #fff; border-radius: 10px; background: transparent; color: #fff; font: inherit; font-weight: 800; }
   .map { height: 230px; border: 3px solid var(--yellow); border-radius: 12px; overflow: hidden; background: #e8efe0; color: #333; }
@@ -382,7 +396,8 @@
         <span id="r-photo-label">Add a photo <span class="opt" style="font-weight:600;color:#e9e2ff">(if you have one)</span></span>
         <input type="file" id="r-photo" accept="image/*">
       </label>
-      <div class="photo-prev" id="r-photo-prev" hidden><img alt="Your photo" id="r-photo-img"><button type="button" id="r-photo-x">Remove photo</button></div>
+      <div class="photo-prev" id="r-photo-prev" hidden><img alt="Your photo" id="r-photo-img"><span class="photo-side"><span class="photo-status" id="r-photo-status" role="status"></span><button type="button" id="r-photo-x">Remove photo</button></span></div>
+      <div class="photo-no" id="r-photo-no" role="alert" hidden><b>This photo can&rsquo;t be used</b><span id="r-photo-no-text">It didn&rsquo;t pass our automatic photo check. Please choose a different photo of the dog, or send your report without one.</span></div>
     </div>
 
     <div class="field" id="f-town">
@@ -392,6 +407,12 @@
 
     <div class="field" id="f-map">
       <label class="f" id="r-map-label">Tap the map where you saw it</label>
+      <div class="find-row">
+        <input type="search" id="r-find" placeholder="Or search: street or place, e.g. High Street, Ayr" enterkeyhint="search" autocomplete="off" aria-label="Search for a street or place">
+        <button type="button" id="r-find-go">Find</button>
+      </div>
+      <p class="find-msg" id="r-find-msg" role="status" hidden></p>
+      <div class="find-list" id="r-find-list" hidden></div>
       <div class="map" id="r-map"></div>
       <span class="hint">Pinch to zoom. Tap again to move the pin.</span>
     </div>
@@ -467,6 +488,7 @@ const app = initializeApp({
 const fns = getFunctions(app, 'europe-west1');
 const publicDogs = httpsCallable(fns, 'publicDogs', { timeout: 30000 });
 const submitReport = httpsCallable(fns, 'submitReport', { timeout: 60000 });
+const checkReportPhoto = httpsCallable(fns, 'checkReportPhoto', { timeout: 30000 });
 
 const AYRSHIRE = [55.46, -4.63];
 const TYPES = {
@@ -482,6 +504,7 @@ const TYPES = {
 const $ = id => document.getElementById(id);
 const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 let DOGS = [], type = null, photo = null, thumb = null, pinLatLng = null, map = null, marker = null, openedAt = Date.now();
+let photoStamp = '', photoCheck = null;   // the automatic photo check, done as soon as a photo is chosen
 
 // ---------- screens ----------
 function show(id, push) {
@@ -509,7 +532,35 @@ document.addEventListener('click', e => {
 });
 
 // ---------- the dogs we are looking for ----------
-const dogPic = d => d.thumb ? '<img alt="" src="' + esc(d.thumb) + '">' : '<span class="nophoto">No photo</span>';
+// Dog photos get the same pale "LDA" watermark as LDA's posters, so they are harder to copy and misuse.
+const dogPic = d => d.thumb ? '<img alt="" class="marked" data-mark="' + esc(d.thumb) + '">' : '<span class="nophoto">No photo</span>';
+const marked = new Map();
+function watermark(src) {
+  if (!marked.has(src)) marked.set(src, new Promise(done => {
+    const img = new Image();
+    img.onload = () => {
+      try {
+        const c = document.createElement('canvas'); c.width = img.width; c.height = img.height;
+        const x = c.getContext('2d'); x.drawImage(img, 0, 0);
+        const k = Math.max(c.width, c.height) / 400, step = 28 * k;
+        x.font = 'italic 800 ' + (9 * k) + 'px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif';
+        x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillStyle = 'rgba(255,255,255,0.3)';
+        for (let row = 0, y = 12 * k; y < c.height + step; y += step, row++)
+          for (let px = row % 2 ? step / 2 : 0; px < c.width + step; px += step) { x.save(); x.translate(px, y); x.rotate(-Math.PI / 3); x.fillText('LDA', 0, 0); x.restore(); }
+        done(c.toDataURL('image/jpeg', 0.85));
+      } catch (e) { done(''); }
+    };
+    img.onerror = () => done('');
+    img.src = src;
+  }));
+  return marked.get(src);
+}
+function markPics() {
+  document.querySelectorAll('img[data-mark]').forEach(im => {
+    const src = im.getAttribute('data-mark'); im.removeAttribute('data-mark');
+    watermark(src).then(url => { if (url) im.src = url; });
+  });
+}
 function drawDogs(note) {
   const html = note ? '<p class="foot" style="text-align:left">' + esc(note) + '</p>'
     : DOGS.map(d => d.safe
@@ -521,6 +572,7 @@ function drawDogs(note) {
         (d.foundWhere ? ' <span class="tag where">' + esc(d.foundWhere) + '</span>' : '') + '</span>' +
         '<span class="seen">Seen<br>this dog?</span></button>').join('');
   document.querySelectorAll('.dog-list').forEach(el => { el.innerHTML = html; });
+  markPics();
 }
 async function loadDogs(tries) {
   try {
@@ -559,7 +611,7 @@ function setupForm(dogId, keep) {
   if (type !== 'lost') { $('r-form').classList.remove('not-owner'); $('r-notowner').hidden = true; $('r-behalf').hidden = true; } else setOwner();
   drawDanger();
   if (keep) return;
-  $('r-form').reset(); clearErrors(); setPhoto(null, null); pinLatLng = null; openedAt = Date.now();
+  $('r-form').reset(); clearErrors(); setPhoto(null, null); $('r-photo-no').hidden = true; $('r-find-list').hidden = true; $('r-find-list').textContent = ''; findMsg(''); pinLatLng = null; openedAt = Date.now();
   setOwner(); drawDanger();
   if (marker && map) { map.removeLayer(marker); marker = null; }
   if (map) map.setView(AYRSHIRE, 9);
@@ -584,7 +636,9 @@ function shrink(img, maxSide, maxChars, square) {
   return out;
 }
 function setPhoto(full, small) {
-  photo = full; thumb = small;
+  photo = full; thumb = small; photoStamp = '';
+  $('r-photo-status').textContent = ''; $('r-photo-status').className = 'photo-status';
+  if (full) $('r-photo-no').hidden = true;
   $('r-photo-prev').hidden = !full; $('r-photo-btn').hidden = !!full;
   if (full) $('r-photo-img').src = full;
 }
@@ -592,11 +646,33 @@ $('r-photo').addEventListener('change', function () {
   const f = this.files && this.files[0]; this.value = '';
   if (!f) return;
   const url = URL.createObjectURL(f), img = new Image();
-  img.onload = () => { URL.revokeObjectURL(url); setPhoto(shrink(img, 1000, 450000), shrink(img, 360, 60000, true)); };
+  img.onload = () => { URL.revokeObjectURL(url); setPhoto(shrink(img, 1000, 450000), shrink(img, 360, 60000, true)); checkPhoto(); };
   img.onerror = () => { URL.revokeObjectURL(url); alert('Sorry, that photo could not be opened. Try a different one.'); };
   img.src = url;
 });
 $('r-photo-x').addEventListener('click', () => setPhoto(null, null));
+// Google checks the photo straight away. A photo that fails is taken off with a clear "can't be used" message;
+// one that passes gets a stamp, so it is not checked again when the report is sent.
+function checkPhoto() {
+  const mine = photo, st = $('r-photo-status');
+  st.textContent = 'Checking photo\u2026'; st.className = 'photo-status checking';
+  photoCheck = checkReportPhoto({ photo, thumb }).then(res => {
+    if (photo !== mine) return;
+    const r = (res && res.data) || {};
+    if (r.ok === false) { setPhoto(null, null); photoNo(''); return; }
+    photoStamp = r.stamp || '';
+    st.textContent = r.checked ? '\u2713 Photo OK' : 'Photo added'; st.className = 'photo-status' + (r.checked ? ' ok' : '');
+  }).catch(err => {
+    if (photo !== mine) return;
+    if (String((err && err.code) || '').includes('resource-exhausted')) { setPhoto(null, null); photoNo(err.message); return; }
+    st.textContent = 'Photo added'; st.className = 'photo-status';   // it will be checked when the report is sent instead
+  }).finally(() => { photoCheck = null; });
+}
+function photoNo(text) {
+  $('r-photo-no-text').textContent = text || 'It didn\u2019t pass our automatic photo check. Please choose a different photo of the dog, or send your report without one.';
+  $('r-photo-no').hidden = false;
+  $('r-photo-no').scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
 
 // The map (OpenStreetMap)
 let leaflet = null;
@@ -616,13 +692,7 @@ function startMap() {
     if (map) return;
     map = L.map(el, { scrollWheelZoom: false }).setView(AYRSHIRE, 9);
     L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, attribution: '&copy; OpenStreetMap contributors' }).addTo(map);
-    map.on('click', e => {
-      pinLatLng = { lat: +e.latlng.lat.toFixed(5), lng: +e.latlng.lng.toFixed(5) };
-      const icon = L.divIcon({ className: '', html: '<span class="pin"></span>', iconSize: [28, 28], iconAnchor: [14, 28] });
-      if (marker) marker.setLatLng(e.latlng); else marker = L.marker(e.latlng, { icon }).addTo(map);
-      $('f-map').classList.remove('bad'); const er = $('f-map').querySelector('.err'); if (er) er.remove();
-      drawFullBar();
-    });
+    map.on('click', e => { dropPin(e.latlng.lat, e.latlng.lng); findMsg(''); });
     // Full screen button: the whole screen becomes the map, with a "Done" button to come back.
     const btn = document.createElement('button'), bar = document.createElement('div');
     btn.type = 'button'; btn.className = 'map-full-btn'; btn.textContent = 'Full screen'; bar.className = 'map-full-bar'; bar.setAttribute('role', 'status');
@@ -638,6 +708,52 @@ function startMap() {
     el.classList.add('failed'); el.textContent = 'The map could not be loaded. You can still send the report with the Town/Village.';
   });
 }
+
+function dropPin(lat, lng) {
+  pinLatLng = { lat: +(+lat).toFixed(5), lng: +(+lng).toFixed(5) };
+  const icon = L.divIcon({ className: '', html: '<span class="pin"></span>', iconSize: [28, 28], iconAnchor: [14, 28] });
+  if (marker) marker.setLatLng([pinLatLng.lat, pinLatLng.lng]); else marker = L.marker([pinLatLng.lat, pinLatLng.lng], { icon }).addTo(map);
+  $('f-map').classList.remove('bad'); const er = $('f-map').querySelector('.err'); if (er) er.remove();
+  drawFullBar();
+}
+const whenMap = () => new Promise((done, fail) => { startMap(); let n = 0; const t = setInterval(() => { if (map) { clearInterval(t); done(map); } else if (++n > 100) { clearInterval(t); fail(); } }, 50); });
+
+// ---------- Search for a street or place, and drop the pin there (OpenStreetMap's free place search) ----------
+function findMsg(text, ok) { const m = $('r-find-msg'); m.textContent = text; m.hidden = !text; m.className = 'find-msg' + (ok ? ' ok' : ''); }
+let lastFind = 0;
+async function findPlace() {
+  const q = $('r-find').value.trim(), list = $('r-find-list');
+  list.hidden = true; list.textContent = '';
+  if (q.length < 3) { findMsg('Type a street or place, e.g. High Street, Ayr.'); return; }
+  const wait = 1100 - (Date.now() - lastFind); if (wait > 0) await new Promise(r => setTimeout(r, wait));   // their limit: one search a second
+  lastFind = Date.now();
+  findMsg('Searching\u2026');
+  let found = [];
+  try {
+    const url = 'https://nominatim.openstreetmap.org/search?format=jsonv2&addressdetails=1&limit=5&countrycodes=gb&bounded=1&viewbox=-5.45,56.0,-3.9,54.85&q=' + encodeURIComponent(q);
+    const res = await fetch(url, { headers: { 'Accept-Language': 'en-GB' } });
+    found = res.ok ? await res.json() : [];
+  } catch (e) { findMsg('Search is not working right now. Please tap the map instead.'); return; }
+  found = (found || []).filter(f => inArea({ lat: +f.lat, lng: +f.lon }));
+  if (!found.length) { findMsg('We couldn\u2019t find that in Ayrshire. Try a street and town, e.g. High Street, Ayr, or tap the map.'); return; }
+  const label = f => { const a = f.address || {}; const parts = [f.name, a.road, a.suburb || a.village || a.town || a.city || a.hamlet, a.postcode ? a.postcode.split(' ')[0] : ''];
+    return [...new Set(parts.filter(Boolean))].join(', ') || String(f.display_name || '').split(',').slice(0, 3).join(','); };
+  const pick = f => {
+    whenMap().then(m => {
+      dropPin(f.lat, f.lon); m.setView([+f.lat, +f.lon], 17);
+      const a = f.address || {}, town = a.town || a.village || a.city || a.hamlet || '';
+      if (town && !$('r-town').value.trim()) $('r-town').value = town;
+      findMsg('Pin dropped: ' + label(f) + '. Tap the map to move it if you need to.', true);
+      list.hidden = true; list.textContent = '';
+    }, () => findMsg('The map could not be loaded. Your Town/Village is enough.'));
+  };
+  if (found.length === 1) return pick(found[0]);
+  findMsg('Which one?');
+  found.forEach(f => { const b = document.createElement('button'); b.type = 'button'; b.textContent = label(f); b.addEventListener('click', () => pick(f)); list.appendChild(b); });
+  list.hidden = false;
+}
+$('r-find-go').addEventListener('click', findPlace);
+$('r-find').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); findPlace(); } });
 
 function drawFullBar() {
   const bar = document.querySelector('#r-map .map-full-bar'); if (!bar) return;
@@ -690,7 +806,7 @@ function saveDraft() {
     f[el.id] = (el.type === 'radio' || el.type === 'checkbox') ? el.checked : el.value;
   });
   const dog = document.querySelector('#r-pick input:checked');
-  const d = { type, at: Date.now(), openedAt, f, pin: pinLatLng, dogId: dog ? dog.value : '', photo, thumb };
+  const d = { type, at: Date.now(), openedAt, f, pin: pinLatLng, dogId: dog ? dog.value : '', photo, thumb, photoStamp };
   try { sessionStorage.setItem(DRAFT, JSON.stringify(d)); } catch (e) { try { d.photo = d.thumb = null; sessionStorage.setItem(DRAFT, JSON.stringify(d)); } catch (e2) {} }
 }
 function clearDraft() { try { sessionStorage.removeItem(DRAFT); } catch (e) {} }
@@ -701,7 +817,7 @@ function restoreDraft() {
   type = d.type; setupForm(d.dogId);
   for (const [id, v] of Object.entries(d.f || {})) { const el = $(id); if (!el) continue; if (el.type === 'radio' || el.type === 'checkbox') el.checked = !!v; else el.value = v; }
   openedAt = d.openedAt || openedAt;
-  if (d.photo) setPhoto(d.photo, d.thumb);
+  if (d.photo) { setPhoto(d.photo, d.thumb); photoStamp = d.photoStamp || ''; if (photoStamp) { $('r-photo-status').textContent = '\u2713 Photo OK'; $('r-photo-status').className = 'photo-status ok'; } }
   pinLatLng = d.pin || null;
   setOwner(); drawDanger();
   show('report');
@@ -784,7 +900,8 @@ $('r-form').addEventListener('submit', async e => {
     website: $('r-web').value, tookMs: Date.now() - openedAt
   };
   if (pinLatLng) { data.lat = pinLatLng.lat; data.lng = pinLatLng.lng; }
-  if (photo && type !== 'posts') { data.photo = photo; data.thumb = thumb; }
+  if (photoCheck) { btn.textContent = 'Checking photo\u2026'; await photoCheck; btn.textContent = 'Sending\u2026'; }
+  if (photo && type !== 'posts') { data.photo = photo; data.thumb = thumb; data.photoStamp = photoStamp; }
   try {
     await submitReport(data);
     clearDraft();

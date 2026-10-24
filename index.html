@@ -23,7 +23,16 @@
     font: 16px/1.45 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
   body::before { content: ""; position: fixed; inset: 0; z-index: -1;
     background: radial-gradient(120% 60% at 50% 0%, var(--deep) 0%, rgba(62,18,163,0) 70%), var(--purple); }
-  main { max-width: 560px; margin: 0 auto; padding: calc(18px + env(safe-area-inset-top)) 16px calc(28px + env(safe-area-inset-bottom)); display: flex; flex-direction: column; gap: 20px; }
+  /* The groups run under Lost Dogs Ayrshire: a slim bar across the very top */
+  .groups { background: #2a0b78; border-bottom: 3px solid var(--yellow); padding: calc(9px + env(safe-area-inset-top)) 10px 9px; }
+  .groups div { display: flex; flex-wrap: wrap; justify-content: center; gap: 5px 16px; font-size: 12.5px; font-weight: 800; }
+  .groups .g { display: inline-flex; align-items: center; gap: 5px; white-space: nowrap; color: var(--soft); }
+  .groups .g.on { color: var(--yellow); }
+  .groups svg { width: 15px; height: 15px; fill: currentColor; flex-shrink: 0; }
+  .groups a.g { text-decoration: underline; text-decoration-color: rgba(233,226,255,.45); text-underline-offset: 3px; }
+  .groups a.g:active { color: var(--yellow); }
+  @media (min-width: 700px) { .groups div { gap: 0; } .groups .g + .g::before { content: "|"; margin: 0 12px; opacity: .5; color: var(--soft); } }
+  main { max-width: 560px; margin: 0 auto; padding: 18px 16px calc(28px + env(safe-area-inset-bottom)); display: flex; flex-direction: column; gap: 20px; }
   a { color: var(--yellow); }
 
   /* Header */
@@ -83,6 +92,7 @@
   <ellipse cx="32" cy="43" rx="15" ry="12"/><ellipse cx="10" cy="29" rx="6.5" ry="8.5" transform="rotate(-20 10 29)"/>
   <ellipse cx="24" cy="14" rx="6.5" ry="9"/><ellipse cx="40" cy="14" rx="6.5" ry="9"/><ellipse cx="54" cy="29" rx="6.5" ry="8.5" transform="rotate(20 54 29)"/>
 </g></defs></svg>
+<nav class="groups" aria-label="Groups run by Lost Dogs Ayrshire"><div><span class="g on" aria-current="page"><svg viewBox="0 0 64 60" aria-hidden="true"><use href="#paw-shape"/></svg>Lost Dogs Ayrshire</span><a class="g" href="https://www.facebook.com/share/1FeJGns5ZZ/" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true" style="fill:none"><circle cx="5" cy="6" r="2.5"/><circle cx="19" cy="6" r="2.5"/><circle cx="5" cy="18" r="2.5"/><circle cx="19" cy="18" r="2.5"/><path d="M7 8l3 3M17 8l-3 3M7 16l3-3M17 16l-3-3"/><rect x="9.5" y="9.5" width="5" height="5" rx="1.2"/></svg>Drone Search &amp; Rescue Ayrshire</a><a class="g" href="https://www.facebook.com/share/g/1DXGPMpfTR/" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21C5 16 2 12.5 2 8.5 2 5.5 4.3 3 7.2 3c2 0 3.6 1 4.8 2.7C13.2 4 14.8 3 16.8 3 19.7 3 22 5.5 22 8.5c0 4-3 7.5-10 12.5z"/></svg>Paw Of Kindness Ayrshire</a></div></nav>
 <main>
   <header class="hero">
     <svg class="paw left" viewBox="0 0 64 60" aria-hidden="true"><use href="#paw-shape"/></svg>

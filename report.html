@@ -154,6 +154,13 @@
   .photo-status.ok { color: #7dff9c; }
   .photo-no { display: flex; flex-direction: column; gap: 4px; margin-top: 10px; padding: 12px 14px; border-radius: 12px; background: var(--red); font-weight: 700; }
   .photo-no b { font-size: 1.05rem; }
+  #f-town { position: relative; }
+  .town-list { display: flex; flex-direction: column; margin-top: 6px; border-radius: 12px; overflow: hidden; background: #fff; border: 3px solid var(--yellow); }
+  .town-list button { display: flex; justify-content: space-between; gap: 10px; padding: 12px 14px; border: 0; border-top: 1px solid #e3dcf7; background: #fff; color: #1c1530; font: inherit; font-size: 1rem; font-weight: 800; text-align: left; }
+  .town-list button:first-child { border-top: 0; }
+  .town-list button small { color: #5b4f80; font-weight: 600; white-space: nowrap; }
+  .town-list button:active, .town-list button:focus { background: #f3efff; }
+  .town-list .town-none { padding: 10px 14px; color: #4a3f6b; font-size: .92rem; font-weight: 600; }
   .find-row { display: flex; gap: 8px; margin: 6px 0 8px; }
   .find-row input { flex: 1 1 auto; min-width: 0; -webkit-appearance: none; appearance: none; }
   .find-row button { flex-shrink: 0; padding: 0 16px; border: 0; border-radius: 12px; background: var(--yellow); color: var(--purple); font: inherit; font-weight: 900; }
@@ -402,7 +409,8 @@
 
     <div class="field" id="f-town">
       <label class="f" for="r-town" id="r-town-label">Town/Village</label>
-      <input type="text" id="r-town" autocomplete="address-level2" maxlength="60" placeholder="e.g. Kilmarnock">
+      <input type="text" id="r-town" autocomplete="off" maxlength="60" placeholder="Start typing, e.g. Kilm&hellip;" role="combobox" aria-autocomplete="list" aria-controls="r-town-list" aria-expanded="false">
+      <div class="town-list" id="r-town-list" role="listbox" hidden></div>
     </div>
 
     <div class="field" id="f-map">
@@ -542,9 +550,9 @@ function watermark(src) {
       try {
         const c = document.createElement('canvas'); c.width = img.width; c.height = img.height;
         const x = c.getContext('2d'); x.drawImage(img, 0, 0);
-        const k = Math.max(c.width, c.height) / 400, step = 28 * k;
+        const k = Math.max(c.width, c.height) / 400, step = 46 * k;
         x.font = 'italic 800 ' + (9 * k) + 'px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif';
-        x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillStyle = 'rgba(255,255,255,0.3)';
+        x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillStyle = 'rgba(255,255,255,0.14)';
         for (let row = 0, y = 12 * k; y < c.height + step; y += step, row++)
           for (let px = row % 2 ? step / 2 : 0; px < c.width + step; px += step) { x.save(); x.translate(px, y); x.rotate(-Math.PI / 3); x.fillText('LDA', 0, 0); x.restore(); }
         done(c.toDataURL('image/jpeg', 0.85));
@@ -611,7 +619,7 @@ function setupForm(dogId, keep) {
   if (type !== 'lost') { $('r-form').classList.remove('not-owner'); $('r-notowner').hidden = true; $('r-behalf').hidden = true; } else setOwner();
   drawDanger();
   if (keep) return;
-  $('r-form').reset(); clearErrors(); setPhoto(null, null); $('r-photo-no').hidden = true; $('r-find-list').hidden = true; $('r-find-list').textContent = ''; findMsg(''); pinLatLng = null; openedAt = Date.now();
+  $('r-form').reset(); clearErrors(); setPhoto(null, null); $('r-photo-no').hidden = true; $('r-town-list').hidden = true; $('r-find-list').hidden = true; $('r-find-list').textContent = ''; findMsg(''); pinLatLng = null; openedAt = Date.now();
   setOwner(); drawDanger();
   if (marker && map) { map.removeLayer(marker); marker = null; }
   if (map) map.setView(AYRSHIRE, 9);
@@ -717,6 +725,42 @@ function dropPin(lat, lng) {
   drawFullBar();
 }
 const whenMap = () => new Promise((done, fail) => { startMap(); let n = 0; const t = setInterval(() => { if (map) { clearInterval(t); done(map); } else if (++n > 100) { clearInterval(t); fail(); } }, 50); });
+
+// ---------- Town/Village: start typing and pick from the towns and villages of North, East and South Ayrshire ----------
+// (Anything not on the list can still be typed in full.)
+const AYR_TOWNS = [["Alloway", "South Ayrshire"], ["Annbank", "South Ayrshire"], ["Ardrossan", "North Ayrshire"], ["Auchentiber", "North Ayrshire"], ["Auchinleck", "East Ayrshire"], ["Ayr", "South Ayrshire"], ["Ballantrae", "South Ayrshire"], ["Barassie", "South Ayrshire"], ["Barr", "South Ayrshire"], ["Barrhill", "South Ayrshire"], ["Barrmill", "North Ayrshire"], ["Beith", "North Ayrshire"], ["Bellsbank", "East Ayrshire"], ["Blackwaterfoot (Arran)", "North Ayrshire"], ["Brodick (Arran)", "North Ayrshire"], ["Burnhouse", "North Ayrshire"], ["Catacol (Arran)", "North Ayrshire"], ["Catrine", "East Ayrshire"], ["Colmonell", "South Ayrshire"], ["Corrie (Arran)", "North Ayrshire"], ["Coylton", "South Ayrshire"], ["Craigie", "South Ayrshire"], ["Cronberry", "East Ayrshire"], ["Crookedholm", "East Ayrshire"], ["Crosshill", "South Ayrshire"], ["Crosshouse", "East Ayrshire"], ["Cumnock", "East Ayrshire"], ["Cunninghamhead", "North Ayrshire"], ["Dailly", "South Ayrshire"], ["Dalmellington", "East Ayrshire"], ["Dalry", "North Ayrshire"], ["Dalrymple", "East Ayrshire"], ["Darvel", "East Ayrshire"], ["Doonfoot", "South Ayrshire"], ["Dreghorn", "North Ayrshire"], ["Drongan", "East Ayrshire"], ["Dundonald", "South Ayrshire"], ["Dunlop", "East Ayrshire"], ["Dunure", "South Ayrshire"], ["Failford", "South Ayrshire"], ["Fairlie", "North Ayrshire"], ["Fenwick", "East Ayrshire"], ["Galston", "East Ayrshire"], ["Gatehead", "East Ayrshire"], ["Gateside", "North Ayrshire"], ["Girdle Toll", "North Ayrshire"], ["Girvan", "South Ayrshire"], ["Glenbuck", "East Ayrshire"], ["Glengarnock", "North Ayrshire"], ["Heathfield", "South Ayrshire"], ["Hollybush", "East Ayrshire"], ["Hurlford", "East Ayrshire"], ["Irvine", "North Ayrshire"], ["Kilbirnie", "North Ayrshire"], ["Kildonan (Arran)", "North Ayrshire"], ["Kilmarnock", "East Ayrshire"], ["Kilmaurs", "East Ayrshire"], ["Kilmory (Arran)", "North Ayrshire"], ["Kilwinning", "North Ayrshire"], ["Kirkmichael", "South Ayrshire"], ["Kirkoswald", "South Ayrshire"], ["Knockentiber", "East Ayrshire"], ["Lamlash (Arran)", "North Ayrshire"], ["Largs", "North Ayrshire"], ["Lendalfoot", "South Ayrshire"], ["Loans", "South Ayrshire"], ["Lochranza (Arran)", "North Ayrshire"], ["Logan", "East Ayrshire"], ["Longbar", "North Ayrshire"], ["Lugar", "East Ayrshire"], ["Lugton", "East Ayrshire"], ["Machrie (Arran)", "North Ayrshire"], ["Maidens", "South Ayrshire"], ["Mauchline", "East Ayrshire"], ["Maybole", "South Ayrshire"], ["Millport (Cumbrae)", "North Ayrshire"], ["Minishant", "South Ayrshire"], ["Monkton", "South Ayrshire"], ["Moscow", "East Ayrshire"], ["Mossblown", "South Ayrshire"], ["Muirkirk", "East Ayrshire"], ["Netherthird", "East Ayrshire"], ["New Cumnock", "East Ayrshire"], ["Newmilns", "East Ayrshire"], ["Ochiltree", "East Ayrshire"], ["Old Dailly", "South Ayrshire"], ["Patna", "East Ayrshire"], ["Perceton", "North Ayrshire"], ["Pinmore", "South Ayrshire"], ["Pinwherry", "South Ayrshire"], ["Pirnmill (Arran)", "North Ayrshire"], ["Portencross", "North Ayrshire"], ["Prestwick", "South Ayrshire"], ["Priestland", "East Ayrshire"], ["Rankinston", "East Ayrshire"], ["Saltcoats", "North Ayrshire"], ["Sannox (Arran)", "North Ayrshire"], ["Seamill", "North Ayrshire"], ["Shiskine (Arran)", "North Ayrshire"], ["Sinclairston", "East Ayrshire"], ["Skares", "East Ayrshire"], ["Skelmorlie", "North Ayrshire"], ["Sorn", "East Ayrshire"], ["Springside", "North Ayrshire"], ["Stair", "East Ayrshire"], ["Stevenston", "North Ayrshire"], ["Stewarton", "East Ayrshire"], ["Straiton", "South Ayrshire"], ["Symington", "South Ayrshire"], ["Tarbolton", "South Ayrshire"], ["Torranyard", "North Ayrshire"], ["Trabboch", "East Ayrshire"], ["Troon", "South Ayrshire"], ["Turnberry", "South Ayrshire"], ["Waterside (near Fenwick)", "East Ayrshire"], ["Waterside (near Patna)", "East Ayrshire"], ["West Kilbride", "North Ayrshire"], ["Whiting Bay (Arran)", "North Ayrshire"], ["Whitletts", "South Ayrshire"]];
+function townMatches(q) {
+  q = q.trim().toLowerCase(); if (!q) return [];
+  const starts = [], words = [];
+  AYR_TOWNS.forEach(t => { const n = t[0].toLowerCase();
+    if (n.startsWith(q)) starts.push(t); else if (n.split(/[\s(]+/).some(w => w.startsWith(q))) words.push(t); });
+  return starts.concat(words).slice(0, 8);
+}
+function drawTowns() {
+  const box = $('r-town-list'), input = $('r-town'), q = input.value;
+  const found = townMatches(q);
+  box.textContent = '';
+  const exact = found.length === 1 && found[0][0].toLowerCase() === q.trim().toLowerCase();
+  if (!q.trim() || exact) { box.hidden = true; input.setAttribute('aria-expanded', 'false'); return; }
+  found.forEach(t => {
+    const b = document.createElement('button'); b.type = 'button'; b.setAttribute('role', 'option');
+    b.innerHTML = '<span>' + esc(t[0]) + '</span><small>' + esc(t[1]) + '</small>';
+    b.addEventListener('mousedown', e => e.preventDefault());   // keep the keyboard open until a choice is made
+    b.addEventListener('click', () => { input.value = t[0]; box.hidden = true; input.setAttribute('aria-expanded', 'false'); input.dispatchEvent(new Event('change')); });
+    box.appendChild(b);
+  });
+  if (!found.length) { const n = document.createElement('div'); n.className = 'town-none'; n.textContent = 'Not on our list? That\u2019s fine, just type it in full.'; box.appendChild(n); }
+  box.hidden = false; input.setAttribute('aria-expanded', 'true');
+}
+$('r-town').addEventListener('input', drawTowns);
+$('r-town').addEventListener('focus', drawTowns);
+$('r-town').addEventListener('blur', () => setTimeout(() => { $('r-town-list').hidden = true; $('r-town').setAttribute('aria-expanded', 'false'); }, 150));
+$('r-town').addEventListener('keydown', e => {
+  if (e.key !== 'Enter') return;
+  e.preventDefault();   // Enter picks the top match rather than sending the form
+  const first = $('r-town-list').querySelector('button');
+  if (first && !$('r-town-list').hidden) first.click();
+});
 
 // ---------- Search for a street or place, and drop the pin there (OpenStreetMap's free place search) ----------
 function findMsg(text, ok) { const m = $('r-find-msg'); m.textContent = text; m.hidden = !text; m.className = 'find-msg' + (ok ? ' ok' : ''); }

@@ -161,11 +161,24 @@ function ldaTopics() {
 }
 function ldaEsc(t) { return String(t == null ? '' : t).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
 function ldaDate(ms) { return ms ? new Date(ms).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : ''; }
-// "# Heading" starts a box, "- " is a bullet, **bold**, web links.
-function ldaTopicHtml(body) {
+// A Facebook or YouTube link as a player on the page (when the link allows it), always with a button to watch it there.
+function ldaVideo(f) {
+  var url = String(f.url || ''), frame = '', tall = false, m;
+  if ((m = /(?:youtu\.be\/|[?&]v=|\/shorts\/|\/embed\/)([A-Za-z0-9_-]{6,20})/.exec(url)) && /youtu/.test(url)) {
+    frame = 'https://www.youtube-nocookie.com/embed/' + m[1]; tall = /\/shorts\//.test(url);
+  } else if (/facebook\.com\/.*(\/videos\/|\/reel\/|\/watch\/?\?v=)/i.test(url) || /facebook\.com\/reel\//i.test(url)) {
+    frame = 'https://www.facebook.com/plugins/video.php?href=' + encodeURIComponent(url) + '&show_text=false&width=560'; tall = /\/reel\//i.test(url);
+  }
+  var fbish = /facebook|fb\.watch/i.test(url);
+  return '<div class="tf-video">' + (f.label ? '<b class="tf-cap">' + ldaEsc(f.label) + '</b>' : '') +
+    (frame ? '<div class="tf-frame' + (tall ? ' tall' : '') + '"><iframe src="' + ldaEsc(frame) + '" title="' + ldaEsc(f.label || 'Video') + '" loading="lazy" allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share" allowfullscreen></iframe></div>' : '') +
+    '<a class="tf-watch" href="' + ldaEsc(url) + '" target="_blank" rel="noopener">&#9654; Watch on ' + (fbish ? 'Facebook' : 'YouTube') + '</a></div>';
+}
+// "# Heading" starts a box, "- " is a bullet, **bold**, web links. Videos go under the heading they were given.
+function ldaTopicHtml(body, files, topicId) {
   function inline(t) { return ldaEsc(t).replace(/\*\*(.+?)\*\*/g, '<b>$1</b>').replace(/(https?:\/\/[^\s<]+[^\s<.,;:!?)])/g, '<a href="$1" target="_blank" rel="noopener">$1</a>'); }
   var boxes = [], box = null, list = null;
-  function newBox(head) { box = { head: head, parts: [] }; boxes.push(box); list = null; }
+  function newBox(head) { box = { head: head, parts: [], files: [] }; boxes.push(box); list = null; }
   String(body || '').replace(/\r/g, '').split('\n').forEach(function (raw) {
     var line = raw.trim();
     if (!line) { list = null; return; }
@@ -174,10 +187,20 @@ function ldaTopicHtml(body) {
     if (/^[-*•]\s+/.test(line)) { if (!list) { list = []; box.parts.push(list); } list.push(line.replace(/^[-*•]\s+/, '')); return; }
     list = null; box.parts.push(line);
   });
+  function norm(t) { return String(t || '').trim().toLowerCase(); }
+  var top = null, end = null;
+  (files || []).forEach(function (f) {
+    var b = null;
+    if (f.under && f.under !== '#top' && f.under !== '#end') boxes.forEach(function (x) { if (!b && x.head && norm(x.head) === norm(f.under)) b = x; });
+    if (!b && f.under === '#top') { if (!top) { top = { head: '', parts: [], files: [] }; boxes.unshift(top); } b = top; }
+    if (!b) { if (!end) { end = { head: '', parts: [], files: [] }; boxes.push(end); } b = end; }
+    b.files.push(f);
+  });
+  function filesHtml(fs) { return fs.filter(function (f) { return f.kind === 'video'; }).map(ldaVideo).join(''); }
   return boxes.map(function (b) {
     return '<div class="topic-box">' + (b.head ? '<h2>' + inline(b.head) + '</h2>' : '') + b.parts.map(function (x) {
       return Array.isArray(x) ? '<ul>' + x.map(function (li) { return '<li>' + inline(li) + '</li>'; }).join('') + '</ul>' : '<p>' + inline(x) + '</p>';
-    }).join('') + '</div>';
+    }).join('') + (b.files.length ? filesHtml(b.files) : '') + '</div>';
   }).join('');
 }
 

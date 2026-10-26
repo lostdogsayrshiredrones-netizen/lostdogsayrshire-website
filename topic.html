@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#5220c4">
+<link rel="apple-touch-icon" sizes="180x180" href="icon-192.png">
+<link rel="manifest" href="manifest.json">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="LDA">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>Advice · Lost Dogs Ayrshire</title>
+<meta name="description" content="Advice from Lost Dogs Ayrshire on keeping your dog safe.">
+<link rel="icon" type="image/png" href="icon-192.png">
+<style>
+  :root { --purple: #5220c4; --deep: #3e12a3; --yellow: #fdf90f; --soft: #e9e2ff; }
+  * { box-sizing: border-box; }
+  html { background: var(--purple); }
+  body { margin: 0; color: #fff; font: 17px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+  main { max-width: 640px; margin: 0 auto; padding: calc(18px + env(safe-area-inset-top)) 16px calc(28px + env(safe-area-inset-bottom)); display: flex; flex-direction: column; gap: 12px; }
+  .back { align-self: flex-start; padding: 8px 18px; border: 3px solid var(--yellow); border-radius: 999px; color: var(--yellow); font-weight: 800; text-decoration: none; }
+  h1 { margin: 4px 0 0; padding: 10px 12px 8px; background: var(--yellow); color: var(--purple); border-radius: 12px; font-size: 1.6rem; font-weight: 900; text-align: center; text-transform: uppercase; }
+  .upd { margin: 0; text-align: center; color: var(--soft); font-size: .85rem; }
+  #t-body { display: flex; flex-direction: column; gap: 12px; }
+  .msg { margin: 20px 0; text-align: center; color: var(--soft); }
+  .topic-box { padding: 14px 16px; border-radius: 14px; background: #fff; color: #1c1530; }
+  .topic-box h2 { margin: 0 0 6px; color: var(--deep); font-size: 1.15rem; }
+  .topic-box p { margin: 0 0 8px; } .topic-box p:last-child { margin-bottom: 0; }
+  .topic-box ul { margin: 0; padding-left: 22px; } .topic-box li { margin: 4px 0; }
+  .topic-box a { color: var(--deep); font-weight: 700; word-break: break-word; }
+  .report { display: block; margin-top: 6px; padding: 14px; border-radius: 14px; background: var(--yellow); color: var(--purple); font-weight: 900; text-align: center; text-decoration: none; box-shadow: 0 4px 0 rgba(0,0,0,.3); }
+  .site-foot { margin-top: 12px; text-align: center; font-size: .9rem; color: #e9e2ff; line-height: 1.7; }
+  .site-foot .mail { display: inline-block; margin-bottom: 6px; font-size: 1.15rem; font-weight: 900; color: #fff; text-decoration: none; }
+  .site-foot .mail span { color: #fdf90f; }
+  .site-foot a { color: #fdf90f; }
+  @media (display-mode: standalone) { main { padding-top: calc(38px + env(safe-area-inset-top)); } }
+</style>
+</head>
+<body>
+<main>
+  <a class="back" href="./"><svg viewBox="0 0 24 24" width="20" height="20" style="vertical-align:-3px;margin-right:6px" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h5v-6h4v6h5V10"/></svg>Home</a>
+  <h1 id="t-title">Advice</h1>
+  <p class="upd" id="t-upd"></p>
+  <div id="t-body"><p class="msg">Loading…</p></div>
+  <a class="report" href="report.html">Lost, loose or found a dog? Report it here</a>
+  <footer class="site-foot"><a class="mail" href="mailto:lostdogsayrshire@gmail.com">Email us: <span>lostdogsayrshire@gmail.com</span></a><br><a href="./">Home</a> · <a href="report-privacy.html">Privacy</a> · Lost Dogs Ayrshire</footer>
+</main>
+<script>
+// Advice topics (Fireworks, Stormy weather…), written by LDA admins in the volunteer app.
+// Read through the publicTopics function. Shared by the home page and topic.html.
+var LDA_TOPICS_URL = 'https://europe-west1-lost-dogs-ayrshire.cloudfunctions.net/publicTopics';
+function ldaTopics() {
+  return fetch(LDA_TOPICS_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{"data":{}}' })
+    .then(function (r) { if (!r.ok) throw new Error('http ' + r.status); return r.json(); })
+    .then(function (j) { return (j && j.result && j.result.topics) || []; });
+}
+function ldaEsc(t) { return String(t == null ? '' : t).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+function ldaDate(ms) { return ms ? new Date(ms).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : ''; }
+// "# Heading" starts a box, "- " is a bullet, **bold**, web links.
+function ldaTopicHtml(body) {
+  function inline(t) { return ldaEsc(t).replace(/\*\*(.+?)\*\*/g, '<b>$1</b>').replace(/(https?:\/\/[^\s<]+[^\s<.,;:!?)])/g, '<a href="$1" target="_blank" rel="noopener">$1</a>'); }
+  var boxes = [], box = null, list = null;
+  function newBox(head) { box = { head: head, parts: [] }; boxes.push(box); list = null; }
+  String(body || '').replace(/\r/g, '').split('\n').forEach(function (raw) {
+    var line = raw.trim();
+    if (!line) { list = null; return; }
+    if (/^#+\s*/.test(line)) { newBox(line.replace(/^#+\s*/, '')); return; }
+    if (!box) newBox('');
+    if (/^[-*•]\s+/.test(line)) { if (!list) { list = []; box.parts.push(list); } list.push(line.replace(/^[-*•]\s+/, '')); return; }
+    list = null; box.parts.push(line);
+  });
+  return boxes.map(function (b) {
+    return '<div class="topic-box">' + (b.head ? '<h2>' + inline(b.head) + '</h2>' : '') + b.parts.map(function (x) {
+      return Array.isArray(x) ? '<ul>' + x.map(function (li) { return '<li>' + inline(li) + '</li>'; }).join('') + '</ul>' : '<p>' + inline(x) + '</p>';
+    }).join('') + '</div>';
+  }).join('');
+}
+
+var want = new URLSearchParams(location.search).get('t') || '';
+ldaTopics().then(function (list) {
+  var t = list.filter(function (x) { return x.id === want; })[0];
+  if (!t) { document.getElementById('t-body').innerHTML = '<p class="msg">Sorry, this page is no longer available. <a href="./" style="color:#fdf90f">See our home page</a>.</p>'; return; }
+  document.getElementById('t-title').textContent = (t.icon ? t.icon + ' ' : '') + t.title;
+  document.title = t.title + ' · Lost Dogs Ayrshire';
+  document.getElementById('t-upd').textContent = t.updated ? 'Updated ' + ldaDate(t.updated) : '';
+  document.getElementById('t-body').innerHTML = ldaTopicHtml(t.body);
+}).catch(function () {
+  document.getElementById('t-body').innerHTML = '<p class="msg">This page could not be loaded. Check your signal and try again.</p>';
+});
+</script>
+</body>
+</html>

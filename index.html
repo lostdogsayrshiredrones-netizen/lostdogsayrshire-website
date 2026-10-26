@@ -92,6 +92,16 @@
   .site-foot a { color: #fdf90f; }
   /* Saved as an app on iPhone: keep the top clear of the blurred status bar */
   @media (display-mode: standalone) { .groups { padding-top: calc(30px + env(safe-area-inset-top)); } }
+  /* Advice & seasonal tips: text links to topic pages written in the volunteer app */
+  .topics { margin-top: 6px; padding: 16px; border-radius: 16px; background: rgba(255,255,255,.1); border: 2px solid rgba(253,249,15,.5); }
+  .topics h2 { margin: 0 0 2px; color: var(--yellow); font-size: 1.05rem; letter-spacing: .12em; text-transform: uppercase; text-align: center; }
+  .topics > p { margin: 0 0 8px; color: var(--soft); font-size: .9rem; text-align: center; }
+  .topics a { display: flex; align-items: center; gap: 12px; padding: 12px 4px; border-top: 1px solid rgba(255,255,255,.18); color: #fff; text-decoration: none; }
+  .topics .ic { font-size: 1.5rem; line-height: 1; width: 32px; text-align: center; flex-shrink: 0; }
+  .topics .tx { display: flex; flex-direction: column; min-width: 0; }
+  .topics .tx b { font-size: 1.1rem; font-weight: 800; text-decoration: underline; text-decoration-color: var(--yellow); text-decoration-thickness: 2px; text-underline-offset: 4px; }
+  .topics .tx small { font-size: .8rem; font-weight: 600; color: var(--soft); }
+  .topics .chev { margin-left: auto; color: var(--yellow); font-size: 1.6rem; font-weight: 900; line-height: 1; }
 </style>
 </head>
 <body>
@@ -136,7 +146,49 @@
     <span><b>Our Facebook Page</b><small>Latest posts, appeals and good news</small></span>
   </a>
 
+  <section class="topics" id="topics" hidden><h2>Advice &amp; seasonal tips</h2><p>Keeping your dog safe</p><div id="topic-links"></div></section>
+
   <footer class="site-foot"><a class="mail" href="mailto:lostdogsayrshire@gmail.com">Email us: <span>lostdogsayrshire@gmail.com</span></a><br><a href="report-privacy.html">Privacy</a> · Lost Dogs Ayrshire</footer>
 </main>
+<script>
+// Advice topics (Fireworks, Stormy weather…), written by LDA admins in the volunteer app.
+// Read through the publicTopics function. Shared by the home page and topic.html.
+var LDA_TOPICS_URL = 'https://europe-west1-lost-dogs-ayrshire.cloudfunctions.net/publicTopics';
+function ldaTopics() {
+  return fetch(LDA_TOPICS_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{"data":{}}' })
+    .then(function (r) { if (!r.ok) throw new Error('http ' + r.status); return r.json(); })
+    .then(function (j) { return (j && j.result && j.result.topics) || []; });
+}
+function ldaEsc(t) { return String(t == null ? '' : t).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+function ldaDate(ms) { return ms ? new Date(ms).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : ''; }
+// "# Heading" starts a box, "- " is a bullet, **bold**, web links.
+function ldaTopicHtml(body) {
+  function inline(t) { return ldaEsc(t).replace(/\*\*(.+?)\*\*/g, '<b>$1</b>').replace(/(https?:\/\/[^\s<]+[^\s<.,;:!?)])/g, '<a href="$1" target="_blank" rel="noopener">$1</a>'); }
+  var boxes = [], box = null, list = null;
+  function newBox(head) { box = { head: head, parts: [] }; boxes.push(box); list = null; }
+  String(body || '').replace(/\r/g, '').split('\n').forEach(function (raw) {
+    var line = raw.trim();
+    if (!line) { list = null; return; }
+    if (/^#+\s*/.test(line)) { newBox(line.replace(/^#+\s*/, '')); return; }
+    if (!box) newBox('');
+    if (/^[-*•]\s+/.test(line)) { if (!list) { list = []; box.parts.push(list); } list.push(line.replace(/^[-*•]\s+/, '')); return; }
+    list = null; box.parts.push(line);
+  });
+  return boxes.map(function (b) {
+    return '<div class="topic-box">' + (b.head ? '<h2>' + inline(b.head) + '</h2>' : '') + b.parts.map(function (x) {
+      return Array.isArray(x) ? '<ul>' + x.map(function (li) { return '<li>' + inline(li) + '</li>'; }).join('') + '</ul>' : '<p>' + inline(x) + '</p>';
+    }).join('') + '</div>';
+  }).join('');
+}
+
+ldaTopics().then(function (list) {
+  if (!list.length) return;
+  document.getElementById('topic-links').innerHTML = list.map(function (t) {
+    return '<a href="topic.html?t=' + encodeURIComponent(t.id) + '"><span class="ic">' + ldaEsc(t.icon || '🐾') + '</span><span class="tx"><b>' + ldaEsc(t.title) + '</b>' +
+      (t.updated ? '<small>Updated ' + ldaDate(t.updated) + '</small>' : '') + '</span><span class="chev" aria-hidden="true">›</span></a>';
+  }).join('');
+  document.getElementById('topics').hidden = false;
+}).catch(function () {});
+</script>
 </body>
 </html>

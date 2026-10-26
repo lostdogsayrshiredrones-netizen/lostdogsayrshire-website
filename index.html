@@ -90,6 +90,8 @@
   .site-foot .mail { display: inline-block; margin-bottom: 6px; font-size: 1.15rem; font-weight: 900; color: #fff; text-decoration: none; }
   .site-foot .mail span { color: #fdf90f; }
   .site-foot a { color: #fdf90f; }
+  /* Saved as an app on iPhone: keep the top clear of the blurred status bar */
+  @media (display-mode: standalone) { .groups { padding-top: calc(30px + env(safe-area-inset-top)); } }
 </style>
 </head>
 <body>

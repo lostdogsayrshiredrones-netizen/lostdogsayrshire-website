@@ -228,6 +228,11 @@
   .demo-bar span { flex: 1 1 auto; }
   .demo-bar button { flex-shrink: 0; padding: 9px 12px; border: 2px solid #fff; border-radius: 10px; background: #fff; color: var(--red); font: inherit; font-weight: 900; }
   .demo-bar button .n { display: inline-block; min-width: 20px; padding: 0 5px; margin-left: 4px; border-radius: 999px; background: var(--red); color: #fff; }
+  /* Saved as an app on iPhone: keep the top clear of the blurred status bar */
+  @media (display-mode: standalone) {
+    main { padding-top: calc(38px + env(safe-area-inset-top)); }
+    .home-pill { top: calc(38px + env(safe-area-inset-top)); }
+  }
 </style>
 </head>
 <body>

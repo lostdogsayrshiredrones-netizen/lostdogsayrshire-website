@@ -199,6 +199,7 @@
   .pick label { display: flex; align-items: center; gap: 12px; padding: 10px; border: 4px solid var(--deep); border-radius: 12px; background: var(--deep); cursor: pointer; }
   .pick label:has(input:checked) { background: #fff; color: var(--deep); border-color: var(--yellow); }
   .pick input { width: 22px; height: 22px; margin: 0; accent-color: var(--purple); }
+  .pick img.marked { background: #3e12a3; }
   .pick img, .pick .nophoto { width: 60px; height: 60px; object-fit: cover; border-radius: 8px; flex-shrink: 0; }
   .pick .nophoto { display: flex; align-items: center; justify-content: center; border: 2px dashed #b9a6f0; font-size: .75rem; }
   .pick small { display: block; font-size: .85rem; opacity: .85; }
@@ -606,6 +607,7 @@ function fillPick(dogId) {
     '<label><input type="radio" name="dog" value="' + esc(d.id) + '"' + (d.id === dogId ? ' checked' : '') + '>' + dogPic(d) +
     '<span><b>Name: ' + esc(d.name) + '</b><small>' + esc(d.statusLabel) + (d.area ? ' · ' + esc(d.area) : '') + '</small></span></label>').join('')
     : '<p class="hint">Loading the dogs…</p>';
+  markPics();   // put the (watermarked) photos in
 }
 function setupForm(dogId, keep) {
   const T = TYPES[type];

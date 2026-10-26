@@ -513,7 +513,8 @@ const TYPES = {
 const $ = id => document.getElementById(id);
 const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 let DOGS = [], type = null, photo = null, thumb = null, pinLatLng = null, map = null, marker = null, openedAt = Date.now();
-let photoStamp = '', photoCheck = null;   // the automatic photo check, done as soon as a photo is chosen
+let photoStamp = '', photoCheck = null;
+let wantDog = null;   // dog chosen by a link from a Facebook post (report.html?dog=ID)   // the automatic photo check, done as soon as a photo is chosen
 
 // ---------- screens ----------
 function show(id, push) {
@@ -590,7 +591,10 @@ async function loadDogs(tries) {
     drawDogs('');
     document.querySelectorAll('.posts-btn').forEach(b => { b.hidden = !looking; });
     $('all-safe').hidden = looking;   // good-news note when every dog is safe (or none are listed)
-    if (!$('report').hidden && type === 'posts') fillPick($('r-pick').querySelector('input:checked') ? $('r-pick').querySelector('input:checked').value : null);
+    if (!$('report').hidden && type === 'posts') fillPick($('r-pick').querySelector('input:checked') ? $('r-pick').querySelector('input:checked').value : wantDog);
+    // Link for a dog that is now safe or no longer listed: show the list instead (a safe dog shows its good news there).
+    if (wantDog && !DOGS.some(d => d.id === wantDog && !d.safe) && !$('report').hidden && type === 'posts') show('dogs');
+    wantDog = null;
   } catch (e) {
     if ((tries || 0) < 2) return setTimeout(() => loadDogs((tries || 0) + 1), 2500);
     drawDogs('The list could not be loaded. Check your signal, or see our Facebook page.');
@@ -984,10 +988,17 @@ $('poster-close').addEventListener('click', () => { $('poster-full').hidden = tr
 // ---------- start ----------
 $('dogs-logo').src = document.querySelector('#home .logo').src;   // same logo, stored once
 // report.html#dogs opens straight on the missing dogs screen
-if (location.hash === '#dogs') { history.replaceState({ s: 'dogs' }, '', location.pathname + '#dogs'); show('dogs', false); }
+const linkDog = (new URLSearchParams(location.search).get('dog') || '').trim();
+if (/^[A-Za-z0-9_-]{1,64}$/.test(linkDog)) {
+  // report.html?dog=ID (the link on our Facebook posts): open the sighting form with that dog already picked.
+  // Back goes to the missing dogs screen.
+  wantDog = linkDog; clearDraft();
+  history.replaceState({ s: 'dogs' }, '', location.pathname + '#dogs');
+  type = 'posts'; setupForm(linkDog); $('r-back').setAttribute('data-go', 'dogs'); show('report');
+} else if (location.hash === '#dogs') { history.replaceState({ s: 'dogs' }, '', location.pathname + '#dogs'); show('dogs', false); }
 else history.replaceState({ s: 'home' }, '', location.pathname);
 loadDogs();
-restoreDraft();
+if (!wantDog) restoreDraft();
 </script>
 </body>
 </html>

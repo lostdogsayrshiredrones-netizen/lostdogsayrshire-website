@@ -233,6 +233,16 @@
     main { padding-top: calc(38px + env(safe-area-inset-top)); }
     .home-pill { top: calc(38px + env(safe-area-inset-top)); }
   }
+  .pc-wrap { position: fixed; inset: 0; z-index: 3000; background: rgba(20,4,70,.72); display: flex; align-items: center; justify-content: center; padding: 20px; }
+  .pc-wrap[hidden] { display: none; }
+  .pc-box { width: 100%; max-width: 420px; background: #fff; color: #1c1530; border-radius: 20px; padding: 22px 18px 18px; text-align: center; border-top: 8px solid #fdf90f; box-shadow: 0 16px 40px rgba(0,0,0,.5); }
+  .pc-box h2 { margin: 0 0 8px; color: #3e12a3; font-size: 1.35rem; }
+  .pc-box p { margin: 0 0 6px; }
+  .pc-num { font-size: 2rem; font-weight: 900; letter-spacing: .04em; color: #3e12a3; margin: 4px 0 8px !important; }
+  .pc-email { font-weight: 700; color: #4a3f6b; overflow-wrap: anywhere; }
+  .pc-small { font-size: .9rem; color: #4a3f6b; margin: 8px 0 14px !important; }
+  .pc-box .send { width: 100%; margin: 0 0 10px; }
+  .pc-edit { width: 100%; padding: 13px; border-radius: 14px; border: 3px solid #5220c4; background: #fff; color: #5220c4; font: inherit; font-weight: 900; }
 </style>
 </head>
 <body>
@@ -445,6 +455,7 @@
       <div class="field" id="f-name"><label class="f" for="r-name">Your name</label><input type="text" id="r-name" autocomplete="given-name" maxlength="60" placeholder="First name is fine"></div>
       <div class="field" id="f-phone"><label class="f" for="r-phone">Your phone</label><input type="tel" id="r-phone" autocomplete="tel" maxlength="20" placeholder="07…"></div>
     </div>
+    <div class="field" id="f-email"><label class="f" for="r-email">Your email <span class="opt">(optional)</span></label><input type="email" id="r-email" autocomplete="email" inputmode="email" maxlength="120" placeholder="In case we can't get through by phone"></div>
 
     <div class="field" id="f-consent">
       <label class="consent"><input type="checkbox" id="r-consent"><span>I'm happy for a Lost Dogs Ayrshire coordinator to contact me about this report. My details are only seen by our coordinators and admins, and are deleted 30 days after the report is dealt with. <a href="report-privacy.html" target="_blank" rel="noopener">Privacy</a></span></label>
@@ -458,6 +469,18 @@
     <button class="send" type="submit" id="r-send">Send report</button>
   </form>
 </section>
+
+<div class="pc-wrap" id="phone-check" hidden role="dialog" aria-modal="true" aria-labelledby="pc-title">
+  <div class="pc-box">
+    <h2 id="pc-title">Is this your number?</h2>
+    <p>We'll call you on</p>
+    <p class="pc-num" id="pc-num"></p>
+    <p class="pc-email" id="pc-email" hidden></p>
+    <p class="pc-small">Please check every digit. If one is wrong, we can't reach you about the dog.</p>
+    <button class="send" type="button" id="pc-yes">Yes, send my report</button>
+    <button class="pc-edit" type="button" id="pc-edit">No, let me change it</button>
+  </div>
+</div>
 
 <!-- THANK YOU -->
 <section id="thanks" class="thanks" hidden>
@@ -907,7 +930,19 @@ function clearErrors() {
   $('r-msg').hidden = true;
 }
 function fail(id, msg) { const box = $(id); box.classList.add('bad'); const s = document.createElement('span'); s.className = 'err'; s.textContent = msg; box.appendChild(s); return box; }
-function ukPhone(p) { const d = p.replace(/[\s()\-.]/g, '').replace(/^\+44/, '0').replace(/^0044/, '0'); return /^0\d{9,10}$/.test(d) ? d : null; }
+// A real-looking UK number: mobile 07…, landline 01…/02…, or 03…. Obvious made-up numbers are refused.
+function phoneDigits(p) { return String(p || '').replace(/[\s()\-.]/g, '').replace(/^\+44/, '0').replace(/^0044/, '0'); }
+function ukPhone(p) { const d = phoneDigits(p); return /^(07[1-57-9]\d{8}|01\d{8,9}|0[23]\d{9})$/.test(d) && !fakePhone(d) ? d : null; }
+function fakePhone(d) {
+  const rest = d.slice(2);
+  return /^(\d)\1+$/.test(rest) || /(\d)\1{6,}/.test(d) || /0123456|1234567|2345678|3456789|9876543|8765432|7654321/.test(d)
+    || /^07700900\d{3}$|^01632960\d{3}$|^01\d1496\d{4}$|^0[23]\d{2}4960\d{3}$/.test(d);   // Ofcom's numbers for TV and films
+}
+function phoneProblem(p) { const d = phoneDigits(p); if (!d) return 'Please add your phone number';
+  return /^(07[1-57-9]\d{8}|01\d{8,9}|0[23]\d{9})$/.test(d) ? (fakePhone(d) ? 'Please check your phone number. We need it to call you about the dog' : '') : 'Please check your phone number. It should be a UK number, like 07700 123456'; }
+function emailOk(e) { return /^[^\s@]{1,64}@[^\s@]+\.[a-z]{2,}$/i.test(e); }
+const prettyNum = d => /^07\d{9}$/.test(d) ? d.slice(0, 5) + ' ' + d.slice(5) : /^0[23]\d{9}$/.test(d) ? d.slice(0, 3) + ' ' + d.slice(3, 7) + ' ' + d.slice(7) : d.slice(0, 5) + ' ' + d.slice(5);
+let confirmedPhone = '';   // the number they have said is right, so we only ask once
 function inArea(p) { return p.lat > 54 && p.lat < 57 && p.lng > -7 && p.lng < -2.5; }
 
 $('r-form').addEventListener('submit', async e => {
@@ -923,7 +958,7 @@ $('r-form').addEventListener('submit', async e => {
     if (!$('r-rel').value) note(fail('f-rel', 'Please choose your relationship to the owner'));
     if (!$('r-oname').value.trim()) note(fail('f-oname', "Please add the owner's name"));
     ownerPhone = ukPhone($('r-ophone').value);
-    if (!ownerPhone) note(fail('f-ophone', "Please add the owner's UK phone number"));
+    if (!ownerPhone) note(fail('f-ophone', phoneDigits($('r-ophone').value) ? "Please check the owner's phone number" : "Please add the owner's UK phone number"));
     else if (ownerPhone === ukPhone($('r-phone').value)) note(fail('f-ophone', "Please give the owner's own number, not yours"));
     if (!$('r-oknows').checked) note(fail('f-oknows', 'Please tick to confirm the owner knows'));
   }
@@ -938,9 +973,13 @@ $('r-form').addEventListener('submit', async e => {
   if (T.descNeeded && $('r-desc').value.trim().length < 5) note(fail('f-desc', 'Please add a short description'));
   if (!$('r-name').value.trim()) note(fail('f-name', 'Please add your name'));
   const phone = ukPhone($('r-phone').value);
-  if (!phone) note(fail('f-phone', 'Please add a UK phone number'));
+  if (!phone) note(fail('f-phone', phoneProblem($('r-phone').value)));
+  const email = $('r-email').value.trim();
+  if (email && !emailOk(email)) note(fail('f-email', 'Please check your email address, or leave it empty'));
   if (!$('r-consent').checked) note(fail('f-consent', 'Please tick so a coordinator can contact you'));
   if (first) { first.scrollIntoView({ behavior: 'smooth', block: 'center' }); return; }
+  // One quick check that the number is right: a single wrong digit means we can't reach them.
+  if (confirmedPhone !== phone) { askPhone(phone, email); return; }
 
   const btn = $('r-send'); btn.disabled = true; btn.textContent = 'Sending…';
   const data = {
@@ -950,7 +989,7 @@ $('r-form').addEventListener('submit', async e => {
     relationship: behalf ? $('r-rel').value : undefined, ownerName: behalf ? $('r-oname').value.trim() : undefined,
     ownerPhone: behalf ? ownerPhone : undefined, ownerKnows: behalf ? $('r-oknows').checked : undefined,
     town: $('r-town').value.trim(), date: $('r-date').value, time: $('r-time').value,
-    details: $('r-desc').value.trim(), name: $('r-name').value.trim(), phone, consent: true,
+    details: $('r-desc').value.trim(), name: $('r-name').value.trim(), phone, email: email || undefined, consent: true,
     danger: danger || undefined,
     website: $('r-web').value, tookMs: Date.now() - openedAt
   };
@@ -985,6 +1024,18 @@ $('r-form').addEventListener('submit', async e => {
   }
   btn.disabled = false; btn.textContent = T.send;
 });
+
+// "Is this your number?" before sending.
+function askPhone(phone, email) {
+  $('pc-num').textContent = prettyNum(phone);
+  $('pc-email').textContent = email ? 'and email ' + email : '';
+  $('pc-email').hidden = !email;
+  $('phone-check').hidden = false; document.body.classList.add('map-open');
+  $('pc-yes').focus();
+}
+function closePhoneCheck() { $('phone-check').hidden = true; document.body.classList.remove('map-open'); }
+$('pc-yes').addEventListener('click', () => { confirmedPhone = ukPhone($('r-phone').value) || ''; closePhoneCheck(); $('r-form').requestSubmit ? $('r-form').requestSubmit() : $('r-send').click(); });
+$('pc-edit').addEventListener('click', () => { closePhoneCheck(); const i = $('r-phone'); i.scrollIntoView({ behavior: 'smooth', block: 'center' }); setTimeout(() => i.focus(), 300); });
 
 // Loose Dog advice poster: tap to see it full size (pinch to zoom, long-press to save or share).
 $('t-poster-open').addEventListener('click', () => { $('poster-full-img').src = $('t-poster-img').src; $('poster-full').hidden = false; document.body.classList.add('map-open'); });

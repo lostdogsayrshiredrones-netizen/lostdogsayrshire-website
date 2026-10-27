@@ -292,7 +292,7 @@
   <h2>Current missing dogs</h2>
   <button class="choice" type="button" data-go="dogs" id="see-dogs">
     <svg viewBox="0 0 64 60" fill="#5220c4" aria-hidden="true"><use href="#paw-shape"/></svg>See the current missing dogs</button>
-  <footer class="site-foot"><a class="mail" href="mailto:lostdogsayrshire@gmail.com">Email us: <span>lostdogsayrshire@gmail.com</span></a><br><a href="./">Home</a> · <a href="report-privacy.html">Privacy</a> · Lost Dogs Ayrshire</footer>
+  <footer class="site-foot"><a class="mail" href="mailto:lostdogsayrshire@gmail.com">Email us: <span>lostdogsayrshire@gmail.com</span></a><br><a href="./">Home</a> · <a href="report-privacy.html">Privacy</a><br><span class="copy">&copy; 2026 Lost Dogs Ayrshire. All rights reserved.</span></footer>
 </section>
 
 <!-- DOGS WE'RE LOOKING FOR (opened from the website home page) -->
@@ -319,7 +319,7 @@
     <svg viewBox="0 0 24 24" fill="none" stroke="#5220c4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 9h10M7 13h6"/></svg>I've seen a dog from your posts</button>
   <div class="dog-list" style="display:flex;flex-direction:column;gap:10px"><p class="foot" style="text-align:left">Loading…</p></div>
   <p class="foot">Tap a dog if you think you've seen it.</p>
-  <footer class="site-foot"><a class="mail" href="mailto:lostdogsayrshire@gmail.com">Email us: <span>lostdogsayrshire@gmail.com</span></a><br><a href="./">Home</a> · <a href="report-privacy.html">Privacy</a> · Lost Dogs Ayrshire</footer>
+  <footer class="site-foot"><a class="mail" href="mailto:lostdogsayrshire@gmail.com">Email us: <span>lostdogsayrshire@gmail.com</span></a><br><a href="./">Home</a> · <a href="report-privacy.html">Privacy</a><br><span class="copy">&copy; 2026 Lost Dogs Ayrshire. All rights reserved.</span></footer>
 </section>
 
 <!-- REPORT FORM (one form, fields change with the type) -->
@@ -550,7 +550,7 @@
   </div>
   <div class="warn" style="width:100%">Urgent? Call Lost Dogs Ayrshire on <a href="tel:07715950588" style="color:#fff"><b>07715 950588</b></a></div>
   <button class="send" type="button" data-go="home" style="width:100%">Send another report</button>
-  <footer class="site-foot"><a class="mail" href="mailto:lostdogsayrshire@gmail.com">Email us: <span>lostdogsayrshire@gmail.com</span></a><br><a href="./">Home</a> · <a href="report-privacy.html">Privacy</a> · Lost Dogs Ayrshire</footer>
+  <footer class="site-foot"><a class="mail" href="mailto:lostdogsayrshire@gmail.com">Email us: <span>lostdogsayrshire@gmail.com</span></a><br><a href="./">Home</a> · <a href="report-privacy.html">Privacy</a><br><span class="copy">&copy; 2026 Lost Dogs Ayrshire. All rights reserved.</span></footer>
 </section>
 
 
@@ -693,7 +693,7 @@ function setupForm(dogId, keep) {
   const T = TYPES[type];
   $('r-title').textContent = T.title;
   $('r-town-label').textContent = T.town;
-  $('r-map-label').innerHTML = esc(T.map) + ' <span class="opt">(if you can)</span>';
+  $('r-map-label').innerHTML = esc(T.map) + ' <span class="opt">(optional)</span>';
   $('r-date-label').textContent = T.date;
   $('r-desc-label').innerHTML = esc(T.desc) + (T.descNeeded ? '' : ' <span class="opt">(optional)</span>');
   $('r-send').textContent = T.send;
@@ -883,7 +883,7 @@ $('r-find').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preven
 
 function drawFullBar() {
   const bar = document.querySelector('#r-map .map-full-bar'); if (!bar) return;
-  bar.textContent = pinLatLng ? 'Pin dropped. Tap again to move it, or Done to carry on.' : $('r-map-label').textContent.replace(/\s*\(if you can\)\s*$/, '');
+  bar.textContent = pinLatLng ? 'Pin dropped. Tap again to move it, or Done to carry on.' : $('r-map-label').textContent.replace(/\s*\((if you can|optional)\)\s*$/, '');
   bar.classList.toggle('done', !!pinLatLng);
 }
 function setFull(on) {
@@ -963,7 +963,7 @@ function setOwner() {
   $('r-chip-q').textContent = behalf ? 'Is the dog microchipped, and are the details up to date?' : 'Is your dog microchipped, and are the details up to date?';
   if (lost) {
     $('r-town-label').textContent = behalf ? 'Town/Village where the dog went missing' : TYPES.lost.town;
-    $('r-map-label').innerHTML = esc(behalf ? 'Tap the map where the dog was last seen' : TYPES.lost.map) + ' <span class="opt">(if you can)</span>';
+    $('r-map-label').innerHTML = esc(behalf ? 'Tap the map where the dog was last seen' : TYPES.lost.map) + ' <span class="opt">(optional)</span>';
     $('r-desc-label').textContent = behalf ? 'Describe the dog (breed, colour, collar, microchipped?) and what happened' : TYPES.lost.desc;
   }
   if (no) { clearErrors(); $('r-notowner').scrollIntoView({ behavior: 'smooth', block: 'center' }); }

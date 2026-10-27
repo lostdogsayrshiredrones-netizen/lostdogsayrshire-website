@@ -345,7 +345,7 @@
       <div class="field" id="f-oknows">
         <label class="consent"><input type="checkbox" id="r-oknows"><span>The owner knows I am reporting this, and is happy for Lost Dogs Ayrshire to contact them.</span></label>
       </div>
-      <div class="behalf-note">Thank you. Lost Dogs Ayrshire will review your report and phone the owner. <b>No search or posts will start until the owner has agreed.</b> Please let them know to expect our call.</div>
+      <div class="behalf-note">Thank you. Lost Dogs Ayrshire will review your report and phone the owner. <b>No search will start until the owner has agreed.</b> Please let them know to expect our call.</div>
     </div>
 
     <div class="field" data-for="posts" id="f-dog">
@@ -1000,7 +1000,7 @@ $('r-form').addEventListener('submit', async e => {
     await submitReport(data);
     clearDraft();
     $('t-call-text').textContent = behalf
-      ? 'We will review your report and phone the owner. No search or posts will start until the owner has agreed. Please let them know to expect our call.'
+      ? 'We will review your report and phone the owner. No search will start until the owner has agreed. Please let them know to expect our call.'
       : 'A coordinator may phone you to ask a few questions. Please keep your phone handy.';
     // A found dog is already safe: keep the short line. Everyone else gets the Loose Dog advice poster.
     $('t-safety').hidden = type !== 'found';

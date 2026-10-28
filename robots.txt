@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://lostdogsayrshire.org.uk/sitemap.xml

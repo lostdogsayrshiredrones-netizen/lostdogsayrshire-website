@@ -81,9 +81,9 @@
     box-shadow: inset 0 2px 0 rgba(255,255,255,.35), inset 0 -3px 0 rgba(0,0,0,.12), 0 7px 0 #0a4ea8, 0 12px 20px rgba(20,4,70,.45); }
   .go.fb:active { box-shadow: inset 0 2px 0 rgba(255,255,255,.35), inset 0 -3px 0 rgba(0,0,0,.12), 0 1px 0 #0a4ea8, 0 3px 6px rgba(20,4,70,.4); }
   .warn { padding: 12px 14px; border-radius: 12px; background: var(--red); font-weight: 700; text-align: center; }
-  .warn { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 14px; line-height: 1.25; }
+  .warn { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: center; column-gap: 10px; row-gap: 0; padding: 12px 14px; line-height: 1.2; }
   .warn .w1 { font-size: 1.2rem; font-weight: 900; }
-  .warn .w2 { font-size: 2rem; font-weight: 900; color: #fff; letter-spacing: .02em; }
+  .warn .w2 { font-size: 1.7rem; font-weight: 900; color: #fff; letter-spacing: .02em; }
   .warn .w3 { margin-top: 2px; font-size: 1rem; font-weight: 700; }
   /* Footer: the same on every page of the website */
   .site-foot { margin-top: 12px; text-align: center; font-size: .9rem; color: #e9e2ff; line-height: 1.7; }
@@ -103,6 +103,10 @@
   .topics .tx small { font-size: .8rem; font-weight: 600; color: var(--soft); }
   .topics .chev { margin-left: auto; color: var(--yellow); font-size: 1.6rem; font-weight: 900; line-height: 1; }
   .go.welfare { color: #14532d; background: linear-gradient(180deg, #ffffff 0%, #eaf6ee 100%); box-shadow: inset 0 0 0 3px #1d8a3a, 0 6px 0 #1d8a3a, 0 8px 14px rgba(20,4,70,.35); }
+  .numlink { display: flex; align-items: center; gap: 10px; margin-top: -4px; padding: 11px 14px; border-radius: 12px; background: rgba(255,255,255,.12); color: #fff; text-decoration: none; font-size: .95rem; line-height: 1.3; }
+  .numlink svg { flex-shrink: 0; color: var(--yellow); }
+  .numlink b { color: var(--yellow); }
+  .numlink i { margin-left: auto; font-style: normal; font-size: 1.6rem; font-weight: 900; color: var(--yellow); line-height: 1; }
 </style>
 </head>
 <body>
@@ -130,7 +134,8 @@
     <span><b>Report a dog</b><small>Lost, loose or found a dog? Or seen one of ours? Tell us here.</small></span>
   </a>
 
-  <div class="warn"><span class="w1">Dog or Person in Danger?</span><span class="w2">Call 999</span><span class="w3">Please don&rsquo;t pursue or call a loose dog.</span></div>
+  <div class="warn"><span class="w1">Dog or person in immediate danger?</span><span class="w2">Call 999</span></div>
+  <a class="numlink" href="useful-numbers.html"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2z"/></svg><span><b>Useful numbers</b></span><i aria-hidden="true">&rsaquo;</i></a>
 
   <a class="go" href="report.html#dogs">
     <svg viewBox="0 0 64 60" fill="#5220c4" aria-hidden="true"><use href="#paw-shape"/></svg>
@@ -140,11 +145,6 @@
   <a class="go welfare" href="welfare.html">
     <svg viewBox="0 0 24 24" fill="#1d8a3a" aria-hidden="true"><path d="M12 21s-7.5-4.6-9.6-9.2C.9 8.4 3 4.5 6.7 4.5c2.1 0 3.6 1.1 4.3 2.4.7-1.3 2.2-2.4 4.3-2.4 3.7 0 5.8 3.9 4.3 7.3C19.5 16.4 12 21 12 21z"/></svg>
     <span><b>Worried about a dog&rsquo;s welfare?</b><small>Injured, neglected or in distress, but not loose</small></span>
-  </a>
-
-  <a class="go" href="useful-numbers.html">
-    <svg viewBox="0 0 24 24" fill="none" stroke="#5220c4" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2z"/></svg>
-    <span><b>Useful numbers</b><small>Dog wardens, Scottish SPCA, Network Rail and more</small></span>
   </a>
 
   <a class="go fb" href="https://www.facebook.com/share/1CVhRETYbH/" target="_blank" rel="noopener">

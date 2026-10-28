@@ -257,6 +257,8 @@
   .w-call span { font-size: 1.15rem; }
   .w-card small { color: #4a3f6b; } .w-card small a { color: var(--deep); font-weight: 800; }
   .w-tell { padding: 10px 12px; border-radius: 10px; background: var(--yellow); color: var(--deep); }
+  .w-more { align-self: flex-start; padding: 6px 2px; border: 0; background: none; color: var(--deep); font: inherit; font-weight: 800; text-decoration: underline; cursor: pointer; }
+  .w-card[hidden] { display: none; }
   .w-small { font-size: .9rem; color: #4a3f6b; }
 </style>
 </head>
@@ -514,7 +516,7 @@
   <div class="info">
     <div><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fdf90f" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2z"/></svg><span id="t-call-text">A coordinator may phone you to ask a few questions. Please keep your phone handy.</span></div>
     <div id="t-safety" hidden><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fdf90f" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M5.6 5.6l12.8 12.8"/></svg><span id="t-safety-text">Please don't pursue, call or approach a loose dog. A frightened dog may run into danger.</span></div>
-    <div><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fdf90f" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg><span>If you see the dog again, send another report. Each one helps.</span></div>
+    <div id="t-again"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fdf90f" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg><span>If you see the dog again, send another report. Each one helps.</span></div>
   </div>
   <div class="warden" id="t-warden" hidden>
     <h2>Please also tell the dog warden</h2>
@@ -537,6 +539,7 @@
         <small>Out of hours: Police Scotland <a href="tel:101">101</a></small>
       </div>
     </div>
+    <button type="button" class="w-more" id="t-warden-more" hidden>Other councils &rsaquo;</button>
     <p class="w-tell"><b>When you call, please tell them you&rsquo;ve already reported the dog to Lost Dogs Ayrshire.</b></p>
     <p class="w-small">If you&rsquo;d like to look after the dog while its owner is found, tell the dog warden. They will take your details.</p>
   </div>
@@ -1059,6 +1062,7 @@ $('r-form').addEventListener('submit', async e => {
     $('t-poster').hidden = type === 'found';
     // Found a dog: tell them about the dog warden, with their own council first (from the town they chose).
     $('t-warden').hidden = type !== 'found';
+    $('t-again').hidden = type === 'found';   // a found dog is with them already
     if (type === 'found') {
       const town = data.town.toLowerCase(), hit = AYR_TOWNS.find(([n]) => n.toLowerCase() === town || n.toLowerCase().split(' (')[0] === town.split(',')[0].trim());
       const cards = $('t-warden-cards');
@@ -1066,9 +1070,12 @@ $('r-form').addEventListener('submit', async e => {
       if (hit) {
         const c = cards.querySelector('[data-council="' + hit[1] + '"]');
         c.classList.add('near'); cards.prepend(c);
-        $('t-warden-near').textContent = data.town + ' is in ' + hit[1] + ', so ' + hit[1] + ' Council is your dog warden.';
+        $('t-warden-near').textContent = 'From the information you\u2019ve given, ' + hit[1] + ' Council is your dog warden.';
       }
       $('t-warden-near').hidden = !hit;
+      // Their own council only, when we know it; the other two are a tap away.
+      cards.querySelectorAll('.w-card').forEach(c => { c.hidden = !!hit && !c.classList.contains('near'); });
+      $('t-warden-more').hidden = !hit; $('t-warden-more').textContent = 'Other councils \u203a';
     }
     $('t-safety-text').textContent = behalf
       ? "If you see the dog, don't pursue it; crouch down and call it calmly, or let us know where it was."
@@ -1103,6 +1110,7 @@ $('pc-yes').addEventListener('click', () => { confirmedPhone = ukPhone($('r-phon
 $('pc-edit').addEventListener('click', () => { closePhoneCheck(); const i = $('r-phone'); i.scrollIntoView({ behavior: 'smooth', block: 'center' }); setTimeout(() => i.focus(), 300); });
 
 // Loose Dog advice poster: tap to see it full size (pinch to zoom, long-press to save or share).
+$('t-warden-more').addEventListener('click', () => { $('t-warden-cards').querySelectorAll('.w-card').forEach(c => { c.hidden = false; }); $('t-warden-more').hidden = true; });
 $('t-poster-open').addEventListener('click', () => { $('poster-full-img').src = $('t-poster-img').src; $('poster-full').hidden = false; document.body.classList.add('map-open'); });
 $('poster-close').addEventListener('click', () => { $('poster-full').hidden = true; document.body.classList.remove('map-open'); });
 

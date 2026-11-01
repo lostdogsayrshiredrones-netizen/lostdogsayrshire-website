@@ -139,7 +139,8 @@
   .notowner .send { text-align: center; text-decoration: none; background: #fff; color: var(--red); box-shadow: none; }
   .linkish { padding: 0; border: 0; background: none; color: var(--yellow); font: inherit; font-weight: 800; text-decoration: underline; cursor: pointer; }
   form.not-owner > :not(#f-owner):not(#r-notowner):not(.hp) { display: none !important; }
-  .row { display: flex; gap: 10px; }
+  .row { display: flex; flex-wrap: wrap; gap: 10px; }
+  .row > .err { flex: 1 0 100%; }   /* a message under the date and time, not squeezed between them */
   .row > div { flex: 1 1 0; display: flex; flex-direction: column; gap: 4px; min-width: 0; }
   .field { display: flex; flex-direction: column; gap: 4px; }
   .bad input, .bad textarea, .bad .map { border-color: #ff8a8a !important; box-shadow: 0 0 0 3px var(--red); }
@@ -654,10 +655,10 @@ function drawDogs(note) {
   const html = note ? '<p class="foot" style="text-align:left">' + esc(note) + '</p>'
     : DOGS.map(d => d.safe
       ? '<div class="dog safe">' + dogPic(d) +
-        '<span><b>Name: ' + esc(d.name) + '</b>' + (d.area ? '<small>' + esc(d.area) + '</small>' : '') + '<span class="tag safe">' + esc(d.statusLabel) + '</span></span>' +
+        '<span><b>Breed: ' + esc(d.breed || 'Unknown') + '</b>' + (d.area ? '<small>' + esc(d.area) + '</small>' : '') + '<span class="tag safe">' + esc(d.statusLabel) + '</span></span>' +
         '<span class="seen safe">Thank you<br>for sharing!</span></div>'
       : '<button type="button" class="dog" data-dog="' + esc(d.id) + '">' + dogPic(d) +
-        '<span><b>Name: ' + esc(d.name) + '</b>' + (d.area ? '<small>' + esc(d.area) + '</small>' : '') + '<span class="tag">' + esc(d.statusLabel) + '</span>' +
+        '<span><b>Breed: ' + esc(d.breed || 'Unknown') + '</b>' + (d.area ? '<small>' + esc(d.area) + '</small>' : '') + '<span class="tag">' + esc(d.statusLabel) + '</span>' +
         (d.foundWhere ? ' <span class="tag where">' + esc(d.foundWhere) + '</span>' : '') + '</span>' +
         '<span class="seen">Seen<br>this dog?</span></button>').join('');
   document.querySelectorAll('.dog-list').forEach(el => { el.innerHTML = html; });
@@ -688,7 +689,7 @@ function fillPick(dogId) {
   const open = DOGS.filter(d => !d.safe);
   $('r-pick').innerHTML = open.length ? open.map(d =>
     '<label><input type="radio" name="dog" value="' + esc(d.id) + '"' + (d.id === dogId ? ' checked' : '') + '>' + dogPic(d) +
-    '<span><b>Name: ' + esc(d.name) + '</b><small>' + esc(d.statusLabel) + (d.area ? ' · ' + esc(d.area) : '') + '</small></span></label>').join('')
+    '<span><b>Breed: ' + esc(d.breed || 'Unknown') + '</b><small>' + esc(d.statusLabel) + (d.area ? ' · ' + esc(d.area) : '') + '</small></span></label>').join('')
     : '<p class="hint">Loading the dogs…</p>';
   markPics();   // put the (watermarked) photos in
 }

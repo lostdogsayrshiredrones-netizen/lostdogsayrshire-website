@@ -1,0 +1,844 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#5220c4">
+<link rel="apple-touch-icon" sizes="180x180" href="icon-192.png">
+<link rel="manifest" href="manifest.json">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="LDA">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>Drone Search &amp; Rescue Ayrshire · Request a drone search</title>
+<meta name="description" content="Drone Search &amp; Rescue Ayrshire (DSRA): volunteer drone pilots with thermal cameras, helping in the search for missing people, vulnerable adults and missing dogs across Ayrshire. An initiative of Lost Dogs Ayrshire.">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Drone Search &amp; Rescue Ayrshire">
+<meta property="og:title" content="Drone Search &amp; Rescue Ayrshire">
+<meta property="og:description" content="Together we can help bring them home. Request a drone search.">
+<meta property="og:url" content="https://lostdogsayrshire.org.uk/dsra.html">
+<meta property="og:image" content="https://lostdogsayrshire.org.uk/dsra-logo.png">
+<link rel="canonical" href="https://lostdogsayrshire.org.uk/dsra.html">
+<link rel="icon" type="image/png" href="icon-192.png">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<style>
+
+  :root { --purple: #5220c4; --deep: #3e12a3; --yellow: #fdf90f; --ink: #1c1530; --soft: #e9e2ff; --red: #e11d2e; --green: #1d8a3a; }
+  * { box-sizing: border-box; }
+  html { background: var(--purple); }
+  /* Same header as the volunteer app's home screen */
+  body::before { content: ""; position: fixed; inset: 0; z-index: -1;
+    background: radial-gradient(120% 60% at 50% 0%, var(--deep) 0%, rgba(62,18,163,0) 70%), var(--purple); }
+  .hero { position: relative; margin-top: 50px; text-align: center; margin-bottom: 6px; }   /* room for the Home button above the logo */
+  #dogs-back:not([hidden]) + .hero { margin-top: 4px; }
+  .hero .paw { position: absolute; top: 6px; width: 64px; fill: #7f52de; }
+  .hero .paw.left { left: 0; transform: rotate(-14deg); }
+  .hero .paw.right { right: 0; transform: rotate(14deg); }
+  .logo-row { display: flex; align-items: flex-end; gap: 10px; }
+  .logo-row::before, .logo-row::after { content: ""; flex: 1; height: 4px; margin-bottom: 14px; border-radius: 2px; background: var(--yellow); }
+  .logo { width: 150px; height: 150px; display: block; border-radius: 50%; box-shadow: 0 0 0 4px var(--yellow), 0 8px 22px rgba(0,0,0,.35); }
+  .hero-title { margin: 16px 0 0; }
+  .hero-banner { display: block; background: var(--yellow); color: var(--purple); border-radius: 14px; padding: 8px 10px 6px;
+    font-size: clamp(2rem, 11.5vw, 4rem); font-weight: 900; line-height: 1; letter-spacing: -.01em; text-transform: uppercase; white-space: nowrap; }
+  .hero-place { display: block; margin-top: 12px; color: #fff; font-size: clamp(1.5rem, 8vw, 2.4rem); font-weight: 900; line-height: 1;
+    letter-spacing: .2em; text-indent: .2em; text-transform: uppercase; }
+  .strap { margin: 12px 0 0; color: var(--yellow); font-size: .78rem; font-weight: 800; letter-spacing: .2em; text-transform: uppercase; }
+  .divider { display: flex; align-items: center; gap: 14px; margin: 16px auto 0; width: 70%; }
+  .divider::before, .divider::after { content: ""; flex: 1; height: 3px; border-radius: 2px; background: var(--yellow); }
+  .divider svg { width: 38px; height: auto; display: block; }
+  .report-head { margin: 4px 0 0; text-align: center; font-size: 1.5rem; }
+  body { margin: 0; min-height: 100vh; background: transparent; color: #fff;
+    font: 16px/1.45 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    padding-bottom: calc(24px + env(safe-area-inset-bottom)); }
+  main { position: relative; max-width: 560px; margin: 0 auto; padding: calc(18px + env(safe-area-inset-top)) 16px calc(28px + env(safe-area-inset-bottom)); }
+  /* Home: a pill in the top right corner, level with the Back button (it scrolls with the page) */
+  .home-pill { position: absolute; right: 16px; top: calc(18px + env(safe-area-inset-top)); z-index: 5; display: inline-flex; align-items: center; gap: 6px;
+    padding: 8px 16px; border: 3px solid var(--yellow); border-radius: 999px; color: var(--yellow); font-weight: 800; font-size: 1.05rem; text-decoration: none; }
+  /* Home button: always in the bottom corner, goes to the website home page */
+  [hidden] { display: none !important; }
+  section { display: flex; flex-direction: column; gap: 12px; }
+  a { color: var(--yellow); }
+  h1.banner { margin: 0; padding: 10px 12px 8px; background: var(--yellow); color: var(--purple); border-radius: 12px;
+    font-size: 1.5rem; font-weight: 900; text-align: center; text-transform: uppercase; line-height: 1.1; }
+  h2 { margin: 8px 0 0; font-size: 1.2rem; font-weight: 900; text-transform: uppercase; color: var(--yellow); }
+  .brand { display: flex; align-items: center; gap: 12px; }
+  .brand img { width: 64px; height: 64px; border-radius: 50%; border: 3px solid var(--yellow); }
+  .brand b { display: block; font-size: 1.35rem; font-weight: 900; line-height: 1.15; }
+  .brand span { color: var(--soft); font-weight: 600; font-size: .9rem; }
+  /* Raised 3D buttons, same style as the website home page */
+  .choice { position: relative; display: flex; align-items: center; gap: 12px; width: 100%; padding: 16px 46px 16px 14px; border: 0; border-radius: 18px;
+    color: var(--deep); font: inherit; font-size: 1.12rem; font-weight: 900; text-align: left; cursor: pointer; -webkit-tap-highlight-color: transparent;
+    background: linear-gradient(180deg, #ffffff 0%, #efeaff 100%);
+    box-shadow: inset 0 2px 0 rgba(255,255,255,.9), inset 0 -3px 0 rgba(62,18,163,.10), 0 7px 0 #a99ad9, 0 12px 20px rgba(20,4,70,.45);
+    transition: transform .08s ease, box-shadow .08s ease; }
+  .choice::after { content: ""; position: absolute; right: 20px; top: 50%; width: 11px; height: 11px; border-top: 4px solid currentColor; border-right: 4px solid currentColor;
+    border-radius: 2px; transform: translateY(-50%) rotate(45deg); opacity: .75; }
+  .choice:active { transform: translateY(6px);
+    box-shadow: inset 0 2px 0 rgba(255,255,255,.9), inset 0 -3px 0 rgba(62,18,163,.10), 0 1px 0 #a99ad9, 0 3px 6px rgba(20,4,70,.4); }
+  .choice.hi { background: linear-gradient(180deg, #fffe7a 0%, #fdf90f 55%, #f1ec00 100%);
+    box-shadow: inset 0 2px 0 rgba(255,255,255,.8), inset 0 -3px 0 rgba(120,110,0,.18), 0 7px 0 #b3ae00, 0 12px 20px rgba(20,4,70,.45); }
+  .choice.hi:active { box-shadow: inset 0 2px 0 rgba(255,255,255,.8), inset 0 -3px 0 rgba(120,110,0,.18), 0 1px 0 #b3ae00, 0 3px 6px rgba(20,4,70,.4); }
+  .choice svg { flex-shrink: 0; width: 30px; height: 30px; }
+  .all-safe { display: flex; flex-direction: column; gap: 8px; padding: 16px; border-radius: 16px; background: #1e6b34; text-align: center; font-weight: 700; }
+  .all-safe b { font-size: 1.3rem; font-weight: 900; color: var(--yellow); }
+  .all-safe .choice { margin-top: 6px; }
+  .choice + .choice { margin-top: 6px; }
+  .warn { padding: 10px 12px; background: var(--red); border-radius: 12px; font-size: .9rem; font-weight: 700; }
+  .dog { display: flex; align-items: center; gap: 12px; width: 100%; padding: 10px; border: 0; border-radius: 12px;
+    background: var(--deep); color: #fff; font: inherit; text-align: left; cursor: pointer; }
+  .dog img.marked { background: #3e12a3; }
+  .dog img, .dog .nophoto { width: 72px; height: 72px; flex-shrink: 0; object-fit: cover; border-radius: 10px; border: 2px solid var(--yellow); }
+  .dog .nophoto { display: flex; align-items: center; justify-content: center; font-size: .75rem; color: var(--soft); border-style: dashed; }
+  .dog b { display: block; font-size: 1.05rem; }
+  .dog small { display: block; color: var(--soft); font-size: .9rem; }
+  .tag { display: inline-block; margin-top: 4px; padding: 2px 8px; background: var(--yellow); color: var(--deep);
+    border-radius: 999px; font-size: .72rem; font-weight: 900; text-transform: uppercase; }
+  .dog .seen { margin-left: auto; font-size: .8rem; font-weight: 800; color: var(--yellow); text-align: right; }
+  .dog.safe { cursor: default; background: #1d6b33; }
+  .dog.safe img, .dog.safe .nophoto { border-color: #fff; }
+  .tag.safe { background: #fff; color: #1d6b33; }
+  .tag.where { background: #fff; color: var(--deep); }
+  .dog .seen.safe { color: #fff; }
+  /* Footer: the same on every page of the website */
+  .site-foot { margin-top: 12px; text-align: center; font-size: .9rem; color: #e9e2ff; line-height: 1.7; }
+  .site-foot .mail { display: inline-block; margin-bottom: 6px; font-size: 1.15rem; font-weight: 900; color: #fff; text-decoration: none; }
+  .site-foot .mail span { color: #fdf90f; }
+  .site-foot a { color: #fdf90f; }
+  .foot { font-size: .82rem; color: var(--soft); text-align: center; }
+  .back { align-self: flex-start; padding: 8px 18px; border: 3px solid var(--yellow); border-radius: 999px;
+    background: transparent; color: var(--yellow); font: inherit; font-weight: 800; font-size: 1.05rem; cursor: pointer; }
+  label.f { font-weight: 800; font-size: .95rem; }
+  label.f .opt { font-weight: 600; color: var(--soft); }
+  #f-chip .f { display: block; font-weight: 800; font-size: .95rem; margin-bottom: 8px; }
+  input[type=text], input[type=search], input[type=tel], input[type=email], input[type=date], input[type=time], textarea, select {
+    width: 100%; padding: 12px; border: 3px solid var(--yellow); border-radius: 12px; background: #fff; color: #1a1a1a;
+    font: inherit; font-size: 16px; min-width: 0; }
+  textarea { resize: vertical; min-height: 90px; }
+  /* iPhone draws date and time boxes wider than asked unless their own styling is switched off */
+  input[type=date], input[type=time] { -webkit-appearance: none; appearance: none; display: block; max-width: 100%; min-height: 52px; text-align: left; }
+  input[type=date]::-webkit-date-and-time-value, input[type=time]::-webkit-date-and-time-value { text-align: left; }
+  .row > div > input { width: 100%; }
+  .owner-q { padding: 12px; border: 3px solid var(--yellow); border-radius: 12px; background: var(--deep); }
+  .owner-q .f { font-weight: 800; font-size: 1.02rem; }
+  .yesno { display: flex; gap: 10px; }
+  .yesno.three { flex-direction: column; gap: 8px; }
+  .danger-q { padding: 12px; border: 3px solid var(--yellow); border-radius: 12px; background: var(--deep); gap: 10px; }
+  .danger-q .f { font-weight: 800; font-size: 1.02rem; }
+  .danger-where { display: flex; flex-direction: column; gap: 8px; }
+  .dbox { display: flex; flex-direction: column; gap: 10px; padding: 16px; border-radius: 14px; box-shadow: 0 0 0 4px #fff; }
+  .dbox > b { display: flex; align-items: center; gap: 10px; font-size: 1.3rem; font-weight: 900; text-transform: uppercase; }
+  .dbox p { margin: 0; line-height: 1.45; font-weight: 600; }
+  .dbox p.small { font-size: .9rem; }
+  .dbox.red { background: var(--red); color: #fff; }
+  .dbox.yellow { background: var(--yellow); color: var(--deep); }
+  .dcall { padding: 14px; border-radius: 12px; text-align: center; text-decoration: none; font-size: 1.2rem; font-weight: 900; text-transform: uppercase; }
+  .dbox.red .dcall { background: #fff; color: var(--red); }
+  .dbox.yellow .dcall { background: var(--purple); color: #fff; }
+  .dnext { margin: 0; font-weight: 800; }
+  .behalf { display: flex; flex-direction: column; gap: 12px; padding: 12px; border: 3px solid var(--yellow); border-radius: 12px; background: var(--deep); }
+  .behalf select { appearance: auto; }
+  .behalf-note { padding: 10px 12px; border-radius: 10px; background: var(--yellow); color: var(--deep); font-size: .92rem; font-weight: 600; }
+  .yesno label { flex: 1 1 0; display: flex; align-items: center; gap: 8px; padding: 12px; border-radius: 12px; background: #fff; color: var(--deep); font-weight: 800; cursor: pointer; }
+  .yesno input { width: 22px; height: 22px; margin: 0; flex-shrink: 0; accent-color: var(--purple); }
+  .yesno label:has(input:checked) { background: var(--yellow); }
+  .notowner { display: flex; flex-direction: column; gap: 10px; padding: 14px; border-radius: 14px; background: var(--red); }
+  .notowner b { font-size: 1.15rem; }
+  .notowner p { margin: 0; }
+  .notowner .send { text-align: center; text-decoration: none; background: #fff; color: var(--red); box-shadow: none; }
+  .linkish { padding: 0; border: 0; background: none; color: var(--yellow); font: inherit; font-weight: 800; text-decoration: underline; cursor: pointer; }
+  form.not-owner > :not(#f-owner):not(#r-notowner):not(.hp) { display: none !important; }
+  .row { display: flex; flex-wrap: wrap; gap: 10px; }
+  .row > .err { flex: 1 0 100%; }   /* a message under the date and time, not squeezed between them */
+  .row > div { flex: 1 1 0; display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+  .field { display: flex; flex-direction: column; gap: 4px; }
+  .bad input, .bad textarea, .bad .map { border-color: #ff8a8a !important; box-shadow: 0 0 0 3px var(--red); }
+  .err { color: #fff; background: var(--red); border-radius: 8px; padding: 3px 8px; font-size: .85rem; font-weight: 700; align-self: flex-start; }
+  .photo-btn { display: flex; align-items: center; gap: 12px; padding: 12px; border: 3px dashed var(--yellow); border-radius: 12px;
+    font-weight: 800; cursor: pointer; }
+  .photo-btn input { position: absolute; width: 1px; height: 1px; opacity: 0; }
+  label.f .opt, .opt { font-weight: 600; color: var(--soft); }
+  .photo-prev { display: flex; align-items: center; gap: 10px; }
+  .photo-side { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; }
+  .photo-status { font-weight: 900; font-size: .95rem; }
+  .photo-status.checking { color: #e9e2ff; }
+  .photo-status.ok { color: #7dff9c; }
+  .photo-no { display: flex; flex-direction: column; gap: 4px; margin-top: 10px; padding: 12px 14px; border-radius: 12px; background: var(--red); font-weight: 700; }
+  .photo-no b { font-size: 1.05rem; }
+  #f-town { position: relative; }
+  .town-list { display: flex; flex-direction: column; margin-top: 6px; border-radius: 12px; overflow: hidden; background: #fff; border: 3px solid var(--yellow); }
+  .town-list button { display: flex; justify-content: space-between; gap: 10px; padding: 12px 14px; border: 0; border-top: 1px solid #e3dcf7; background: #fff; color: #1c1530; font: inherit; font-size: 1rem; font-weight: 800; text-align: left; }
+  .town-list button:first-child { border-top: 0; }
+  .town-list button small { color: #5b4f80; font-weight: 600; white-space: nowrap; }
+  .town-list button:active, .town-list button:focus { background: #f3efff; }
+  .town-list .town-none { padding: 10px 14px; color: #4a3f6b; font-size: .92rem; font-weight: 600; }
+  .find-row { display: flex; gap: 8px; margin: 6px 0 8px; }
+  .find-row input { flex: 1 1 auto; min-width: 0; -webkit-appearance: none; appearance: none; }
+  .find-row button { flex-shrink: 0; padding: 0 16px; border: 0; border-radius: 12px; background: var(--yellow); color: var(--purple); font: inherit; font-weight: 900; }
+  .find-list { display: flex; flex-direction: column; gap: 6px; margin-bottom: 8px; }
+  .find-list button { padding: 10px 12px; border: 2px solid var(--yellow); border-radius: 10px; background: rgba(255,255,255,.08); color: #fff; font: inherit; font-size: .95rem; font-weight: 700; text-align: left; }
+  .find-msg { margin: 0 0 8px; font-size: .92rem; font-weight: 700; color: #e9e2ff; }
+  .find-msg.ok { color: var(--yellow); }
+  .photo-prev img { width: 96px; height: 96px; object-fit: cover; border-radius: 10px; border: 3px solid var(--yellow); }
+  .photo-prev button { padding: 8px 12px; border: 2px solid #fff; border-radius: 10px; background: transparent; color: #fff; font: inherit; font-weight: 800; }
+  .map { height: 230px; border: 3px solid var(--yellow); border-radius: 12px; overflow: hidden; background: #e8efe0; color: #333; }
+  .map.failed { display: flex; align-items: center; justify-content: center; padding: 12px; text-align: center; }
+  /* Full-screen map, for dropping the pin more easily */
+  .map { position: relative; }
+  .map-full-btn { position: absolute; top: 10px; right: 10px; z-index: 1001; padding: 9px 12px; background: var(--yellow); color: var(--purple);
+    border: 2px solid var(--purple); border-radius: 10px; font: inherit; font-size: .85rem; font-weight: 900; text-transform: uppercase; cursor: pointer; box-shadow: 0 2px 6px rgba(0,0,0,.35); }
+  .map-full-bar { display: none; }
+  .map.full { position: fixed !important; inset: 0; z-index: 3000; height: auto; border: 0; border-radius: 0; box-shadow: none !important; }
+  .map.full .map-full-btn { top: calc(env(safe-area-inset-top) + 12px); right: 12px; padding: 12px 18px; font-size: 1rem; }
+  .map.full .leaflet-top { top: env(safe-area-inset-top); }
+  .map.full .leaflet-bottom { bottom: calc(env(safe-area-inset-bottom) + 64px); }
+  .map.full .map-full-bar { display: block; position: absolute; left: 12px; right: 12px; bottom: calc(env(safe-area-inset-bottom) + 12px); z-index: 1001;
+    padding: 12px 14px; border-radius: 12px; background: var(--purple); color: #fff; font-weight: 800; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,.35); }
+  .map.full .map-full-bar.done { background: var(--green); }
+  body.map-open { overflow: hidden; }
+  .hint { font-size: .85rem; color: var(--soft); }
+  .pin { display: block; width: 28px; height: 28px; border-radius: 50% 50% 50% 0; background: var(--red); border: 3px solid #fff;
+    transform: rotate(-45deg); box-shadow: 0 2px 6px rgba(0,0,0,.4); }
+  .consent { display: flex; gap: 10px; align-items: flex-start; font-size: .88rem; }
+  .consent input { width: 24px; height: 24px; margin: 0; flex-shrink: 0; accent-color: var(--yellow); }
+  .robot { display: flex; align-items: center; gap: 8px; padding: 8px 12px; background: rgba(255,255,255,.12); border-radius: 10px; font-size: .85rem; }
+  .hp { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
+  .send { padding: 16px; border: 0; border-radius: 14px; background: var(--yellow); color: var(--purple); font: inherit;
+    font-size: 1.2rem; font-weight: 900; text-transform: uppercase; box-shadow: 0 5px 0 var(--deep); cursor: pointer; }
+  .send:disabled { opacity: .6; }
+  .pick { display: flex; flex-direction: column; gap: 8px; }
+  .pick label { display: flex; align-items: center; gap: 12px; padding: 10px; border: 4px solid var(--deep); border-radius: 12px; background: var(--deep); cursor: pointer; }
+  .pick label:has(input:checked) { background: #fff; color: var(--deep); border-color: var(--yellow); }
+  .pick input { width: 22px; height: 22px; margin: 0; accent-color: var(--purple); }
+  .pick img.marked { background: #3e12a3; }
+  .pick img, .pick .nophoto { width: 60px; height: 60px; object-fit: cover; border-radius: 8px; flex-shrink: 0; }
+  .pick .nophoto { display: flex; align-items: center; justify-content: center; border: 2px dashed #b9a6f0; font-size: .75rem; }
+  .pick small { display: block; font-size: .85rem; opacity: .85; }
+  .thanks { align-items: center; text-align: center; }
+  .t-poster { margin: 0; width: 100%; }
+  .t-poster-btn { display: block; width: 100%; padding: 0; border: 0; background: none; cursor: zoom-in; }
+  .t-poster img { display: block; width: 100%; height: auto; border-radius: 14px; border: 3px solid var(--yellow); }
+  .poster-full { position: fixed; inset: 0; z-index: 4000; background: rgba(20,6,60,.96); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px;
+    padding: calc(16px + env(safe-area-inset-top)) 12px calc(16px + env(safe-area-inset-bottom)); overflow: auto; }
+  .poster-full img { width: 100%; max-width: 900px; height: auto; border-radius: 10px; }
+  .poster-full .send { min-width: 200px; }
+  .t-poster figcaption { margin-top: 6px; font-size: .85rem; color: var(--soft); }
+  .tick { width: 84px; height: 84px; border-radius: 50%; background: var(--green); display: flex; align-items: center; justify-content: center; }
+  .info { width: 100%; padding: 14px; background: var(--deep); border-radius: 14px; text-align: left; display: flex; flex-direction: column; gap: 10px; }
+  .info div { display: flex; gap: 10px; }
+  .info svg { flex-shrink: 0; margin-top: 2px; }
+  .card { padding: 12px; background: #fff; color: var(--ink); border-radius: 12px; display: flex; flex-direction: column; gap: 4px; }
+  .card .t { align-self: flex-start; padding: 2px 8px; border-radius: 999px; color: #fff; font-size: .72rem; font-weight: 900; text-transform: uppercase; }
+  .card .t.loose { background: var(--red); } .card .t.lost { background: #b45309; } .card .t.found { background: var(--green); } .card .t.posts { background: var(--purple); }
+  .card img { width: 100%; max-height: 220px; object-fit: cover; border-radius: 8px; }
+  .card b { color: var(--deep); }
+  .demo-bar { position: fixed; left: 0; right: 0; bottom: 0; z-index: 2000; display: flex; align-items: center; gap: 10px;
+    padding: 10px 16px calc(10px + env(safe-area-inset-bottom)); background: var(--red); color: #fff; font-weight: 800; font-size: .85rem; line-height: 1.25;
+    box-shadow: 0 -2px 10px rgba(0,0,0,.25); }
+  .demo-bar b { display: block; font-size: 1rem; letter-spacing: .06em; }
+  .demo-bar span { flex: 1 1 auto; }
+  .demo-bar button { flex-shrink: 0; padding: 9px 12px; border: 2px solid #fff; border-radius: 10px; background: #fff; color: var(--red); font: inherit; font-weight: 900; }
+  .demo-bar button .n { display: inline-block; min-width: 20px; padding: 0 5px; margin-left: 4px; border-radius: 999px; background: var(--red); color: #fff; }
+  /* Saved as an app on iPhone: keep the top clear of the blurred status bar */
+  @media (display-mode: standalone) {
+    main { padding-top: calc(38px + env(safe-area-inset-top)); }
+    .home-pill { top: calc(38px + env(safe-area-inset-top)); }
+  }
+  .pc-wrap { position: fixed; inset: 0; z-index: 3000; background: rgba(20,4,70,.72); display: flex; align-items: center; justify-content: center; padding: 20px; }
+  .pc-wrap[hidden] { display: none; }
+  .pc-box { width: 100%; max-width: 420px; background: #fff; color: #1c1530; border-radius: 20px; padding: 22px 18px 18px; text-align: center; border-top: 8px solid #fdf90f; box-shadow: 0 16px 40px rgba(0,0,0,.5); }
+  .pc-box h2 { margin: 0 0 8px; color: #3e12a3; font-size: 1.35rem; }
+  .pc-box p { margin: 0 0 6px; }
+  .pc-num { font-size: 2rem; font-weight: 900; letter-spacing: .04em; color: #3e12a3; margin: 4px 0 8px !important; }
+  .pc-email { font-weight: 700; color: #4a3f6b; overflow-wrap: anywhere; }
+  .pc-small { font-size: .9rem; color: #4a3f6b; margin: 8px 0 14px !important; }
+  .pc-box .send { width: 100%; margin: 0 0 10px; }
+  .pc-edit { width: 100%; padding: 13px; border-radius: 14px; border: 3px solid #5220c4; background: #fff; color: #5220c4; font: inherit; font-weight: 900; }
+  /* Found a dog: the legal duty to tell the dog warden, with the three Ayrshire numbers */
+  .warden { width: 100%; text-align: left; padding: 16px; border-radius: 16px; background: #fff; color: #1c1530; display: flex; flex-direction: column; gap: 10px; border-top: 8px solid var(--yellow); }
+  .warden h2 { margin: 0; color: var(--deep); font-size: 1.25rem; }
+  .warden p { margin: 0; line-height: 1.45; }
+  .w-near { padding: 8px 12px; border-radius: 10px; background: #fff7c2; font-weight: 800; }
+  .w-cards { display: flex; flex-direction: column; gap: 10px; }
+  .w-card { display: flex; flex-direction: column; gap: 4px; padding: 12px; border-radius: 12px; background: #f3effe; border: 2px solid transparent; }
+  .w-card.near { border-color: var(--purple); background: #ebe3ff; }
+  .w-area { font-size: .75rem; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; color: #5b4f80; }
+  .w-call { display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 4px; padding: 12px; border-radius: 12px; background: var(--deep); color: #fff !important; font-weight: 900; text-decoration: none; box-shadow: inset 0 -4px 0 rgba(0,0,0,.3); }
+  .w-call span { font-size: 1.15rem; }
+  .w-card small { color: #4a3f6b; } .w-card small a { color: var(--deep); font-weight: 800; }
+  .w-tell { padding: 10px 12px; border-radius: 10px; background: var(--yellow); color: var(--deep); }
+  .w-more { align-self: flex-start; padding: 6px 2px; border: 0; background: none; color: var(--deep); font: inherit; font-weight: 800; text-decoration: underline; cursor: pointer; }
+  .w-card[hidden] { display: none; }
+  .w-small { font-size: .9rem; color: #4a3f6b; }
+
+  /* ---- Drone Search & Rescue Ayrshire ---- */
+  main { padding-top: 18px; }
+  .groups { background: #2a0b78; border-bottom: 3px solid var(--yellow); padding: calc(9px + env(safe-area-inset-top)) 10px 9px; }
+  .groups div { display: flex; flex-wrap: wrap; justify-content: center; gap: 5px 16px; font-size: 12.5px; font-weight: 800; }
+  .groups .g { display: inline-flex; align-items: center; gap: 5px; white-space: nowrap; color: var(--soft); }
+  .groups .g.on { color: var(--yellow); }
+  .groups svg { width: 15px; height: 15px; fill: currentColor; flex-shrink: 0; }
+  .groups a.g { text-decoration: underline; text-decoration-color: rgba(233,226,255,.45); text-underline-offset: 3px; }
+  @media (min-width: 700px) { .groups div { gap: 0; } .groups .g + .g::before { content: "|"; margin: 0 12px; opacity: .5; color: var(--soft); } }
+  @media (display-mode: standalone) { .groups { padding-top: calc(30px + env(safe-area-inset-top)); } main { padding-top: 18px; } }
+  .hero { margin-top: 0; }
+  .hero .drone { position: absolute; top: 4px; width: 66px; height: 66px; fill: #7f52de; stroke: #7f52de; }
+  .hero .drone.left { left: 0; transform: rotate(-12deg); }
+  .hero .drone.right { right: 0; transform: rotate(12deg); }
+  .hero-banner.two { white-space: normal; font-size: clamp(2rem, 11vw, 3.6rem); line-height: .98; padding: 10px 10px 8px; }
+  .hero .strap { font-size: .7rem; letter-spacing: .12em; }
+  .divider svg.dr { width: 40px; height: 40px; fill: var(--yellow); stroke: var(--yellow); }
+  .about { margin: 4px 0 0; text-align: center; font-size: 1.02rem; color: var(--soft); }
+  .about b { color: #fff; }
+  .sister { margin: -4px 0 0; text-align: center; font-size: .9rem; color: var(--soft); }
+  .sister a { font-weight: 800; }
+  a.choice { text-decoration: none; }
+  .choice .txt { display: flex; flex-direction: column; line-height: 1.25; }
+  .choice .txt b { font-size: 1.2rem; font-weight: 900; }
+  .choice.hi .txt b { font-size: 1.4rem; text-transform: uppercase; }
+  .choice .txt small { font-size: .9rem; font-weight: 600; opacity: .85; }
+  .choice svg.ic { fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+  .choice svg.dr { fill: var(--purple); stroke: var(--purple); }
+  .choice.fb { color: #fff; background: linear-gradient(180deg, #3d8ff7 0%, #1877f2 60%, #1268da 100%);
+    box-shadow: inset 0 2px 0 rgba(255,255,255,.35), inset 0 -3px 0 rgba(0,0,0,.12), 0 7px 0 #0a4ea8, 0 12px 20px rgba(20,4,70,.45); }
+  .choice + .choice { margin-top: 10px; }
+  .big999 { display: flex; flex-direction: column; align-items: center; padding: 12px 14px; border-radius: 14px; background: var(--red); font-weight: 800; text-align: center; line-height: 1.25; }
+  .big999 b { font-size: 1.8rem; font-weight: 900; }
+  .big999 a { color: #fff; }
+  /* Drones & the rules */
+  .banner-h { margin: 0; padding: 10px 12px 8px; background: var(--yellow); color: var(--purple); border-radius: 12px; font-size: 1.5rem; font-weight: 900; text-align: center; text-transform: uppercase; line-height: 1.1; }
+  .icard { background: #fff; color: #1c1530; border-radius: 16px; padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+  .icard h2 { margin: 0; color: var(--deep); font-size: 1.3rem; text-transform: none; }
+  .icard ul { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 10px; }
+  .icard li { display: flex; gap: 10px; line-height: 1.4; }
+  .icard li .i { flex-shrink: 0; width: 30px; height: 30px; border-radius: 9px; background: var(--soft); display: grid; place-items: center; font-size: 1rem; }
+  .icard .note { margin: 0; padding: 10px 12px; border-radius: 10px; background: #f3efff; color: #4a3f6b; font-size: .9rem; }
+  /* The request form */
+  .brand-row { display: flex; align-items: center; gap: 12px; }
+  .brand-row img { width: 64px; height: 64px; border-radius: 50%; flex-shrink: 0; }
+  .brand-row b { display: block; font-size: 1.35rem; font-weight: 900; line-height: 1.15; }
+  .brand-row span { color: var(--soft); font-weight: 600; font-size: .9rem; }
+  .qbox { padding: 12px; border: 3px solid var(--yellow); border-radius: 12px; background: var(--deep); gap: 10px; }
+  .qbox .f { font-weight: 800; font-size: 1.02rem; }
+  .to-lda { display: flex; flex-direction: column; gap: 10px; padding: 14px; border-radius: 14px; background: #fff; color: #1c1530; }
+  .to-lda b { color: var(--deep); font-size: 1.15rem; }
+  .to-lda p { margin: 0; line-height: 1.45; }
+  .to-lda .choice { color: var(--deep); }
+  .police { display: flex; flex-direction: column; gap: 6px; padding: 14px; border-radius: 14px; background: var(--red); text-align: center; }
+  .police b { font-size: 1.1rem; }
+  .police span { font-weight: 600; font-size: .92rem; }
+  .stop999 { display: flex; flex-direction: column; gap: 8px; padding: 16px; border-radius: 14px; background: var(--red); text-align: center; font-weight: 700; box-shadow: 0 0 0 4px #fff; }
+  .stop999 b { font-size: 1.3rem; font-weight: 900; text-transform: uppercase; }
+  .stop999 .dcall { background: #fff; color: var(--red); }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .chips label { display: inline-flex; align-items: center; gap: 6px; padding: 8px 12px; border-radius: 999px; background: #fff; color: var(--deep); font-weight: 700; font-size: .95rem; cursor: pointer; }
+  .chips input { width: 18px; height: 18px; margin: 0; accent-color: var(--purple); }
+  .chips label:has(input:checked) { background: var(--yellow); }
+  form.dog-yes > :not(#f-dog):not(#q-dog-yes):not(.hp), form.police-no > :not(#f-dog):not(#f-what):not(#f-police):not(#q-police-no):not(.hp) { display: none !important; }
+  /* Thank you */
+  .tcard { width: 100%; display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 18px 16px; border-radius: 16px; background: #fff; color: #1c1530; text-align: center; }
+  .tcard h2 { margin: 0; color: var(--deep); font-size: 1.4rem; text-transform: none; }
+  .tcard p { margin: 0; font-size: 1.05rem; line-height: 1.5; }
+  .photo-ready { display: flex; gap: 10px; align-items: flex-start; padding: 12px; border-radius: 12px; background: #fff7d6; border: 2px solid #e0a800; color: #4a3a00; text-align: left; line-height: 1.45; }
+  .photo-ready svg { flex-shrink: 0; }
+  .site-foot .mail span { display: block; font-size: 1.02rem; }
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+  <g id="drone"><path d="M16 16L48 48M48 16L16 48" stroke-width="7" stroke-linecap="round"/>
+    <circle cx="14" cy="14" r="9.5" fill="none" stroke-width="5.5"/><circle cx="50" cy="14" r="9.5" fill="none" stroke-width="5.5"/>
+    <circle cx="14" cy="50" r="9.5" fill="none" stroke-width="5.5"/><circle cx="50" cy="50" r="9.5" fill="none" stroke-width="5.5"/>
+    <rect x="23" y="23" width="18" height="18" rx="4" stroke="none"/></g>
+  <g id="paw-shape"><ellipse cx="32" cy="43" rx="15" ry="12"/><ellipse cx="10" cy="29" rx="6.5" ry="8.5" transform="rotate(-20 10 29)"/>
+    <ellipse cx="24" cy="14" rx="6.5" ry="9"/><ellipse cx="40" cy="14" rx="6.5" ry="9"/><ellipse cx="54" cy="29" rx="6.5" ry="8.5" transform="rotate(20 54 29)"/></g>
+</defs></svg>
+<nav class="groups" aria-label="Groups run by Lost Dogs Ayrshire"><div><a class="g" href="./"><svg viewBox="0 0 64 60" aria-hidden="true"><use href="#paw-shape"/></svg>Lost Dogs Ayrshire</a><span class="g on" aria-current="page"><svg viewBox="0 0 64 64" aria-hidden="true" style="stroke:currentColor"><use href="#drone"/></svg>Drone Search &amp; Rescue Ayrshire</span><a class="g" href="https://www.facebook.com/share/g/1DXGPMpfTR/" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21C5 16 2 12.5 2 8.5 2 5.5 4.3 3 7.2 3c2 0 3.6 1 4.8 2.7C13.2 4 14.8 3 16.8 3 19.7 3 22 5.5 22 8.5c0 4-3 7.5-10 12.5z"/></svg>Paws Of Kindness Ayrshire</a></div></nav>
+<main>
+
+<!-- DSRA HOME -->
+<section id="home">
+  <header class="hero">
+    <svg class="drone left" viewBox="0 0 64 64" aria-hidden="true"><use href="#drone"/></svg>
+    <svg class="drone right" viewBox="0 0 64 64" aria-hidden="true"><use href="#drone"/></svg>
+    <div class="logo-row"><img class="logo" id="dsra-logo" alt="Drone Search &amp; Rescue Ayrshire logo" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAASwAAAEsCAMAAABOo35HAAAAwFBMVEXk3CKjaGLw2RXitSDw1Rvw0x3/tghRkR+aowS4iUs9mQ0pXhaGeQAXKgtcYAq6ugLGmEN9MoeCOINEPACnyRdeXl6fn5/X19f/AADDfAB/fwD/fwCFPn6q/wD98wAAAABjC6ECAgD37ADz1CDw2BTszSFaAalFmQv+oQCNhwD//wCvqAAVFgBsZwB5dADQyAApJwA3NQBlDp+6swBKRwD9mwBrF5nb0wCalABZVQB3KI39/f3DuwDPpzmMR3nx0x7WeZUkAAAAQHRSTlP8/xr/X50D//////////8D//////////8B/wIC/wP/AP////79/v////8C///////////////////////////QU55IfQAAMdlJREFUeNrtnQt74riyrk3oJKSbkNvu6V4zazugKMwYbGyCG0MGwv//V0dVJcmSbHO16ZnT2+tZ04SLsV+qSp9KJcl7/jnHaHR3MVKPLy4+ffp0eXm52XgvLx7nL+LgcGw2G/H0p08XFxf6gxej0egnXbT3M0BdXV3RI6AkGBGe7ceGoNHnxAlGvwCs0YhucwSYNgKShyheX19exX/Fv+KRPPAx/iWfgrd6gAzP8PvV2S3MOy+oP9CeJCcEwomKcZiwzINz+RLfADGy0bMC884YpAjU5UbC4BoHBSh9vBSf4jlKrv2SgN2dj5d3LpuiCHVJNsNfX5S1EIr2+v6mJY6Pj8eHd3k8Pn58wHM39+v2q8NMGtklueS5Qr53NlLSpF6lQZHpvK7vBaH3+bw/3HL05+8Pgtu9ZKZOgMA8MrCz8GocFnqfIMUNUHjHbYHpQULq7zoUtEdAltuYBEa87kb/blgjuAGbFNkTWNNelEqgzd9brfWrBmbwatq8vEb9D4zq0tMtG7je633r4yhOFrH+/IOAobzAFnRzeaG+818H6/voDzCqDZF6IZNqE6h+DQeY2MdNm0LYCwmyDZnXvw2WNCqO3kekhO+99+sBlQPrP6CBAS/SFI2al9dUUB+hTHhFu0Lnex/WS0ob2Htr/UL+iOZ1+en3poK91wwq9D+SU8Ko1g2RMnlh/EI7Jm9sApfXHCog9QJx6qHfHCntj483ryrcN4bLawIVl6jEr30PEX2f+317sySVIb/0Kzt4zbV5QQBrAle9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"></div>
+    <h1 class="hero-title"><span class="hero-banner two">Drone Search and Rescue</span><span class="hero-place">Ayrshire</span></h1>
+    <p class="strap">Together we can help bring them home</p>
+    <div class="divider" aria-hidden="true"><svg class="dr" viewBox="0 0 64 64"><use href="#drone"/></svg></div>
+  </header>
+  <p class="about">Helping in the search for <b>missing people</b> and <b>vulnerable adults</b>, and supporting Lost Dogs Ayrshire to find missing dogs. Our drones cover large areas quickly and spot what&rsquo;s hard to see on foot.</p>
+  <p class="sister">An initiative brought to you by <a href="./">Lost Dogs Ayrshire</a></p>
+  <div>
+    <a class="choice hi" href="#request" id="go-request"><svg class="dr" viewBox="0 0 64 64" aria-hidden="true"><use href="#drone"/></svg><span class="txt"><b>Request a drone search</b><small>Tell us about the search you need help with</small></span></a>
+    <a class="choice" href="#rules" id="go-rules"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/><path d="M9 12l2 2 4-4"/></svg><span class="txt"><b>Drones &amp; the rules</b><small>How our drones help, and staying safe during a search</small></span></a>
+    <a class="choice fb" href="https://www.facebook.com/share/1FeJGns5ZZ/" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="#fff" aria-hidden="true"><path d="M14 8h3V4h-3c-2.8 0-4 1.8-4 4.3V10H7v4h3v8h4v-8h3l1-4h-4V8.5c0-.3.2-.5.5-.5z"/></svg><span class="txt"><b>Follow us on Facebook</b><small>News and updates from the drone team</small></span></a>
+  </div>
+  <div class="big999">Person missing or in danger?<b>Call <a href="tel:999">999</a></b></div>
+  <footer class="site-foot"><a class="mail" href="mailto:lostdogsayrshiredrones@gmail.com">Email us: <span>lostdogsayrshiredrones@gmail.com</span></a><br><a href="./">Lost Dogs Ayrshire</a> · <a href="report-privacy.html#dsra">Privacy</a><br><span class="copy">&copy; 2026 Lost Dogs Ayrshire. All rights reserved.</span></footer>
+</section>
+
+<!-- DRONES & THE RULES -->
+<section id="rules" hidden>
+  <a class="back" href="#">&#8592; Back</a>
+  <h1 class="banner-h">Drones &amp; the rules</h1>
+  <div class="icard">
+    <h2>How drones help</h2>
+    <ul>
+      <li><span class="i">🌡️</span><span>A thermal camera picks up <b>body heat</b>, so a person or a dog in long grass, gorse or woodland edges shows up as a bright shape.</span></li>
+      <li><span class="i">🗺️</span><span>Fields, woodland edges, farmland and shoreline can be checked <b>in minutes</b> rather than hours on foot.</span></li>
+      <li><span class="i">🌙</span><span>Works best <b>at night and early morning</b>, when the ground is cool.</span></li>
+    </ul>
+    <p class="note">Thick trees and buildings can block the view, so drones work <b>alongside</b> searchers on the ground, not instead of them.</p>
+  </div>
+  <div class="icard">
+    <h2>Safety &amp; the rules</h2>
+    <ul>
+      <li><span class="i">✈️</span><span>Our pilots fly under <b>UK Civil Aviation Authority (CAA)</b> rules.</span></li>
+      <li><span class="i">🚫</span><span>Some areas, such as near <b>Glasgow Prestwick Airport</b>, need permission before we can fly.</span></li>
+      <li><span class="i">👮</span><span>For a missing person, we only fly when <b>Police Scotland</b> have asked us or agreed.</span></li>
+      <li><span class="i">✋</span><span><b>Seen something during a search?</b> Tell the team or the police straight away. If it&rsquo;s a dog, please keep back and don&rsquo;t try to catch it.</span></li>
+      <li><span class="i">🛑</span><span>Please <b>don&rsquo;t fly your own drone</b> near a search. Two drones in the same sky is dangerous, and our pilots would have to land.</span></li>
+    </ul>
+  </div>
+  <a class="choice hi" href="#request"><svg class="dr" viewBox="0 0 64 64" aria-hidden="true"><use href="#drone"/></svg><span class="txt"><b>Request a drone search</b></span></a>
+  <div class="big999">Person missing or in danger?<b>Call <a href="tel:999">999</a></b></div>
+</section>
+
+<!-- REQUEST A DRONE SEARCH -->
+<section id="request" hidden>
+  <a class="back" href="#">&#8592; Back</a>
+  <div class="brand-row"><img alt="" id="req-logo"><div><b>Request a drone search</b><span>Drone Search &amp; Rescue Ayrshire</span></div></div>
+  <form id="r-form" novalidate style="display:flex;flex-direction:column;gap:12px">
+
+    <div class="field qbox" id="f-dog">
+      <span class="f" id="q-dog">Is this search for a missing dog?</span>
+      <div class="yesno" role="radiogroup" aria-labelledby="q-dog">
+        <label><input type="radio" name="dog" value="yes" id="r-dog-yes"><span>Yes</span></label>
+        <label><input type="radio" name="dog" value="no" id="r-dog-no"><span>No</span></label>
+      </div>
+    </div>
+
+    <div class="to-lda" id="q-dog-yes" hidden>
+      <b>Please report your missing dog to Lost Dogs Ayrshire</b>
+      <p>Missing dogs are dealt with by Lost Dogs Ayrshire. Their team will decide with you whether a drone search will help, and ask us to fly.</p>
+      <a class="choice hi" href="report.html" id="to-lda"><svg viewBox="0 0 24 24" fill="none" stroke="#5220c4" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3L2 20h20z"/><path d="M12 10v4M12 17v.5"/></svg><span class="txt"><b>Report a missing dog</b></span></a>
+    </div>
+
+    <div class="field" id="f-what" hidden>
+      <span class="f" id="q-what">What is the search for?</span>
+      <div class="yesno three" role="radiogroup" aria-labelledby="q-what">
+        <label><input type="radio" name="what" value="person"><span>A missing person</span></label>
+        <label><input type="radio" name="what" value="animal"><span>A missing animal (not a dog or cat)</span></label>
+        <label><input type="radio" name="what" value="other"><span>Something else where a drone could help</span></label>
+      </div>
+    </div>
+
+    <div class="field" id="f-police" hidden>
+      <div class="police"><b>Has this been reported to the police?</b><span>Police Scotland lead every search for a missing person. We can only fly when the police have asked us or agreed.</span></div>
+      <div class="yesno" role="radiogroup" aria-label="Has this been reported to the police?">
+        <label><input type="radio" name="police" value="yes" id="r-police-yes"><span>Yes, the police know</span></label>
+        <label><input type="radio" name="police" value="no" id="r-police-no"><span>Not yet</span></label>
+      </div>
+    </div>
+
+    <div class="stop999" id="q-police-no" hidden>
+      <b>Call 999 now</b>
+      <span>Please report the person missing to Police Scotland straight away. Once the police know, you can come back and send this request.</span>
+      <a class="dcall" href="tel:999">Call 999</a>
+    </div>
+
+    <div class="field qbox" id="f-vuln" hidden>
+      <span class="f" id="q-vuln">Is the person vulnerable?</span>
+      <span class="hint" style="color:#fff;margin-top:-6px">For example, a child, someone living with dementia or Alzheimer&rsquo;s, or someone with a learning disability.</span>
+      <div class="yesno three" role="radiogroup" aria-labelledby="q-vuln">
+        <label><input type="radio" name="vuln" value="yes" id="r-vuln-yes"><span>Yes</span></label>
+        <label><input type="radio" name="vuln" value="no" id="r-vuln-no"><span>No</span></label>
+        <label><input type="radio" name="vuln" value="unsure" id="r-vuln-unsure"><span>Not sure</span></label>
+      </div>
+    </div>
+
+    <div class="field" id="f-ref" hidden>
+      <label class="f" for="r-ref">Police incident or reference number</label>
+      <input type="text" id="r-ref" autocomplete="off" maxlength="40">
+      <span class="hint">Police Scotland give you this when you report someone missing.</span>
+    </div>
+
+    <div class="field" id="f-town" hidden>
+      <label class="f" for="r-town">Town/Village</label>
+      <input type="text" id="r-town" autocomplete="off" maxlength="60" placeholder="Start typing, e.g. Kilm&hellip;" role="combobox" aria-autocomplete="list" aria-controls="r-town-list" aria-expanded="false">
+      <div class="town-list" id="r-town-list" role="listbox" hidden></div>
+    </div>
+
+    <div class="field" id="f-map" hidden>
+      <label class="f" id="r-map-label">Tap the map where the search is needed <span class="opt">(optional)</span></label>
+      <div class="find-row">
+        <input type="search" id="r-find" placeholder="Or search: street or place, e.g. High Street, Ayr" enterkeyhint="search" autocomplete="off" aria-label="Search for a street or place">
+        <button type="button" id="r-find-go">Find</button>
+      </div>
+      <p class="find-msg" id="r-find-msg" role="status" hidden></p>
+      <div class="find-list" id="r-find-list" hidden></div>
+      <div class="map" id="r-map"></div>
+      <span class="hint">Pinch to zoom. Tap again to move the pin.</span>
+    </div>
+
+    <div class="row" id="f-when" hidden>
+      <div><label class="f" for="r-date" id="r-date-label">Date last seen</label><input type="date" id="r-date"></div>
+      <div><label class="f" for="r-time" id="r-time-label">Time</label><input type="time" id="r-time"></div>
+    </div>
+
+    <div class="field" id="f-area" hidden>
+      <span class="f">What is the area like? <span class="opt">(tick any)</span></span>
+      <div class="chips">
+        <label><input type="checkbox" name="area" value="Fields">Fields</label>
+        <label><input type="checkbox" name="area" value="Woodland">Woodland</label>
+        <label><input type="checkbox" name="area" value="Farmland">Farmland</label>
+        <label><input type="checkbox" name="area" value="Coast or river">Coast or river</label>
+        <label><input type="checkbox" name="area" value="Loch or reservoir">Loch or reservoir</label>
+        <label><input type="checkbox" name="area" value="Moor or hills">Moor or hills</label>
+        <label><input type="checkbox" name="area" value="Town">Town</label>
+      </div>
+    </div>
+
+    <div class="field qbox" id="f-water" hidden>
+      <span class="f" id="q-water">To your knowledge, have Fire and Rescue or the Coastguard searched the water?</span>
+      <div class="yesno three" role="radiogroup" aria-labelledby="q-water">
+        <label><input type="radio" name="water" value="yes" id="r-water-yes"><span>Yes</span></label>
+        <label><input type="radio" name="water" value="no" id="r-water-no"><span>No</span></label>
+        <label><input type="radio" name="water" value="unknown" id="r-water-unknown"><span>Don&rsquo;t know</span></label>
+      </div>
+    </div>
+
+    <div class="field" id="f-desc" hidden>
+      <label class="f" for="r-desc" id="r-desc-label">Details of the search</label>
+      <textarea id="r-desc" maxlength="1000"></textarea>
+    </div>
+
+    <div class="field" id="f-name" hidden><label class="f" for="r-name">Your name</label><input type="text" id="r-name" autocomplete="name" maxlength="60"></div>
+    <div class="field" id="f-phone" hidden><label class="f" for="r-phone">Contact number</label><input type="tel" id="r-phone" autocomplete="tel" maxlength="20" placeholder="07…"></div>
+    <div class="field" id="f-email" hidden><label class="f" for="r-email">Email address</label><input type="email" id="r-email" autocomplete="email" inputmode="email" maxlength="120"></div>
+
+    <div class="field" id="f-consent" hidden>
+      <label class="consent"><input type="checkbox" id="r-consent"><span>I&rsquo;m happy for the drone team to contact me about this request. My details are only seen by the team, and are deleted 30 days after the request is dealt with. <a href="report-privacy.html#dsra" target="_blank" rel="noopener">Privacy</a></span></label>
+    </div>
+
+    <div class="hp" aria-hidden="true"><label for="r-web">Leave this empty</label><input type="text" id="r-web" tabindex="-1" autocomplete="off"></div>
+
+    <div class="robot" id="f-robot" hidden><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fdf90f" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/><path d="M8.5 12l2.5 2.5 4.5-5"/></svg>Checked automatically that you're not a robot</div>
+
+    <p class="err" id="r-msg" role="alert" hidden></p>
+    <button class="send" type="submit" id="r-send" hidden>Send request</button>
+  </form>
+</section>
+
+<div class="pc-wrap" id="phone-check" hidden role="dialog" aria-modal="true" aria-labelledby="pc-title">
+  <div class="pc-box">
+    <h2 id="pc-title">Is this your number?</h2>
+    <p>The drone team will call you on</p>
+    <p class="pc-num" id="pc-num"></p>
+    <p class="pc-email" id="pc-email"></p>
+    <p class="pc-small">Please check every digit. If one is wrong, we can't reach you.</p>
+    <button class="send" type="button" id="pc-yes">Yes, send my request</button>
+    <button class="pc-edit" type="button" id="pc-edit">No, let me change it</button>
+  </div>
+</div>
+
+<!-- THANK YOU -->
+<section id="thanks" hidden>
+  <div class="brand-row"><img alt="" id="t-logo"><div><b>Request sent</b><span>Drone Search &amp; Rescue Ayrshire</span></div></div>
+  <div class="tcard">
+    <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#1d8a3a" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M7.5 12.5l3 3 6-6.5"/></svg>
+    <h2>Thank you for submitting your request</h2>
+    <p>A drone pilot will carry out an assessment and will assist where possible.</p>
+    <p id="t-police" hidden>As your request is in relation to a missing person, the pilot will speak with <b>Police Scotland</b>.</p>
+    <div class="photo-ready" id="t-photo" hidden>
+      <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#8a6500" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg>
+      <span><b>Please have a recent photo ready, and a description of what they were last wearing.</b> If we get the go-ahead, the pilot will ask you for these. We need to know who we are looking for before we can fly.</span>
+    </div>
+  </div>
+  <div class="stop999" style="box-shadow:none"><span>If anything changes, or someone is in danger</span><b style="font-size:1.8rem;text-transform:none">Call <a href="tel:999" style="color:#fff">999</a></b></div>
+  <a class="send" href="#" style="text-align:center;text-decoration:none">Back to DSRA home</a>
+</section>
+
+</main>
+
+<script type="module">
+// Drone Search & Rescue Ayrshire: the DSRA pages and the "Request a drone search" form.
+// Requests go to the drone team through the checked "submitDroneRequest" sender (never straight into the database).
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js';
+import { getFunctions, httpsCallable } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-functions.js';
+const app = initializeApp({
+  apiKey: "AIzaSyBvsSYYymjt0h9v9cynw2_oophP0BNG0I8",
+  authDomain: "lost-dogs-ayrshire.firebaseapp.com",
+  projectId: "lost-dogs-ayrshire",
+  storageBucket: "lost-dogs-ayrshire.firebasestorage.app",
+  messagingSenderId: "302116971454",
+  appId: "1:302116971454:web:e336d94d271ee433410fef"
+});
+const fns = getFunctions(app, 'europe-west1');
+const submitDroneRequest = httpsCallable(fns, 'submitDroneRequest', { timeout: 60000 });
+
+const AYRSHIRE = [55.46, -4.63];
+const $ = id => document.getElementById(id);
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+let pinLatLng = null, map = null, marker = null, leaflet = null, openedAt = Date.now(), confirmedPhone = '';
+$('req-logo').src = $('t-logo').src = $('dsra-logo').src;   // the same logo, stored once
+
+// ---------- screens: dsra.html, #rules, #request, #thanks ----------
+let sent = false;
+function show() {
+  const want = location.hash.slice(1);
+  const id = want === 'rules' || want === 'request' ? want : want === 'thanks' && sent ? 'thanks' : 'home';
+  if ($('r-map').classList.contains('full')) setFull(false);
+  ['home', 'rules', 'request', 'thanks'].forEach(s => { $(s).hidden = s !== id; });
+  window.scrollTo(0, 0);
+  if (id === 'request') { if (sent) resetForm(); setTimeout(() => { if (!$('f-map').hidden) startMap(); }, 30); }
+}
+window.addEventListener('hashchange', show);
+// "Back" and "Back to DSRA home" go to the DSRA home (the address without a #)
+document.addEventListener('click', e => { const a = e.target.closest('a[href="#"]'); if (a) { e.preventDefault(); history.pushState(null, '', location.pathname); show(); } });
+
+// ---------- the form changes with the answers ----------
+const WHAT = {
+  person:     { date: 'Date last seen', desc: 'Details of the search', ph: 'Where they were last seen, and anything the pilots should know' },
+  animal:     { date: 'Date last seen', desc: 'Details of the search', ph: 'What kind of animal, what it looks like, and anything the pilots should know' },
+  other:      { date: 'Date', desc: 'Details of the search', ph: 'What you need help with, and anything the pilots should know' }
+};
+const val = name => { const c = document.querySelector('input[name="' + name + '"]:checked'); return c ? c.value : ''; };
+const policeNeeded = w => w === 'person';
+// Missing person near water: ask whether Fire and Rescue or the Coastguard have searched it, so the pilots know.
+const WATER = ['Coast or river', 'Loch or reservoir'];
+const waterAsked = () => policeNeeded(val('what')) && WATER.some(w => document.querySelector('input[name="area"][value="' + w + '"]').checked);
+function setup() {
+  const dog = val('dog'), what = val('what'), police = val('police'), form = $('r-form');
+  form.classList.toggle('dog-yes', dog === 'yes');
+  $('q-dog-yes').hidden = dog !== 'yes';
+  $('f-what').hidden = dog !== 'no';
+  $('f-police').hidden = !(dog === 'no' && policeNeeded(what));
+  const stopped = dog === 'no' && policeNeeded(what) && police === 'no';
+  form.classList.toggle('police-no', stopped);
+  $('q-police-no').hidden = !stopped;
+  $('f-ref').hidden = $('f-vuln').hidden = !(dog === 'no' && policeNeeded(what) && police === 'yes');
+  const ready = dog === 'no' && what && (!policeNeeded(what) || police === 'yes');
+  ['f-town', 'f-map', 'f-when', 'f-area', 'f-desc', 'f-name', 'f-phone', 'f-email', 'f-consent', 'f-robot', 'r-send'].forEach(id => { $(id).hidden = !ready; });
+  $('f-water').hidden = !(ready && waterAsked());
+  if (what) { $('r-date-label').textContent = WHAT[what].date; $('r-desc-label').textContent = WHAT[what].desc; $('r-desc').placeholder = WHAT[what].ph; }
+  if (ready) setTimeout(startMap, 30);
+}
+document.querySelectorAll('input[name="dog"], input[name="what"], input[name="police"], input[name="vuln"], input[name="area"], input[name="water"]').forEach(i => i.addEventListener('change', () => { clearErrors(); setup(); }));
+function resetForm() {
+  $('r-form').reset(); sent = false; confirmedPhone = ''; pinLatLng = null; openedAt = Date.now();
+  if (marker && map) { map.removeLayer(marker); marker = null; }
+  clearErrors(); setup();
+}
+
+// ---------- map ----------
+function loadLeaflet() {
+  if (window.L) return Promise.resolve(window.L);
+  if (!leaflet) leaflet = new Promise((ok, no) => {
+    const s = document.createElement('script'); s.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
+    s.onload = () => ok(window.L); s.onerror = () => { leaflet = null; no(); };
+    document.head.appendChild(s);
+  });
+  return leaflet;
+}
+function startMap() {
+  if (map) { map.invalidateSize(); return; }
+  const el = $('r-map');
+  if (el.closest('[hidden]')) return;
+  loadLeaflet().then(L => {
+    if (map) return;
+    map = L.map(el, { scrollWheelZoom: false }).setView(AYRSHIRE, 9);
+    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, attribution: '&copy; OpenStreetMap contributors' }).addTo(map);
+    map.on('click', e => { dropPin(e.latlng.lat, e.latlng.lng); findMsg(''); });
+    const btn = document.createElement('button'), bar = document.createElement('div');
+    btn.type = 'button'; btn.className = 'map-full-btn'; btn.textContent = 'Full screen'; bar.className = 'map-full-bar'; bar.setAttribute('role', 'status');
+    btn.addEventListener('click', e => { e.preventDefault(); e.stopPropagation(); setFull(!el.classList.contains('full')); });
+    if (L.DomEvent && L.DomEvent.disableClickPropagation) { L.DomEvent.disableClickPropagation(btn); L.DomEvent.disableClickPropagation(bar); }
+    el.appendChild(btn); el.appendChild(bar);
+    setTimeout(() => map.invalidateSize(), 200);
+  }, () => { el.classList.add('failed'); el.textContent = 'The map could not be loaded. You can still send the request with the Town/Village.'; });
+}
+function dropPin(lat, lng) {
+  pinLatLng = { lat: +(+lat).toFixed(5), lng: +(+lng).toFixed(5) };
+  const icon = L.divIcon({ className: '', html: '<span class="pin"></span>', iconSize: [28, 28], iconAnchor: [14, 28] });
+  if (marker) marker.setLatLng([pinLatLng.lat, pinLatLng.lng]); else marker = L.marker([pinLatLng.lat, pinLatLng.lng], { icon }).addTo(map);
+  $('f-map').classList.remove('bad'); const er = $('f-map').querySelector('.err'); if (er) er.remove();
+  drawFullBar();
+}
+const whenMap = () => new Promise((done, fail) => { startMap(); let n = 0; const t = setInterval(() => { if (map) { clearInterval(t); done(map); } else if (++n > 100) { clearInterval(t); fail(); } }, 50); });
+function drawFullBar() {
+  const bar = document.querySelector('#r-map .map-full-bar'); if (!bar) return;
+  bar.textContent = pinLatLng ? 'Pin dropped. Tap again to move it, or Done to carry on.' : 'Tap the map where the search is needed';
+  bar.classList.toggle('done', !!pinLatLng);
+}
+function setFull(on) {
+  const el = $('r-map'), btn = el.querySelector('.map-full-btn');
+  if (!btn) return;
+  el.classList.toggle('full', on); document.body.classList.toggle('map-open', on);
+  btn.textContent = on ? 'Done' : 'Full screen';
+  drawFullBar();
+  setTimeout(() => { try { map.invalidateSize(); if (!on && pinLatLng) map.panTo([pinLatLng.lat, pinLatLng.lng]); } catch (e) {} }, 80);
+  if (!on) setTimeout(() => $('f-map').scrollIntoView({ block: 'center' }), 120);
+}
+
+// ---------- Town/Village ----------
+const AYR_TOWNS = [["Alloway", "South Ayrshire"], ["Annbank", "South Ayrshire"], ["Ardrossan", "North Ayrshire"], ["Auchentiber", "North Ayrshire"], ["Auchinleck", "East Ayrshire"], ["Ayr", "South Ayrshire"], ["Ballantrae", "South Ayrshire"], ["Barassie", "South Ayrshire"], ["Barr", "South Ayrshire"], ["Barrhill", "South Ayrshire"], ["Barrmill", "North Ayrshire"], ["Beith", "North Ayrshire"], ["Bellsbank", "East Ayrshire"], ["Blackwaterfoot (Arran)", "North Ayrshire"], ["Brodick (Arran)", "North Ayrshire"], ["Burnhouse", "North Ayrshire"], ["Catacol (Arran)", "North Ayrshire"], ["Catrine", "East Ayrshire"], ["Colmonell", "South Ayrshire"], ["Corrie (Arran)", "North Ayrshire"], ["Coylton", "South Ayrshire"], ["Craigie", "South Ayrshire"], ["Cronberry", "East Ayrshire"], ["Crookedholm", "East Ayrshire"], ["Crosshill", "South Ayrshire"], ["Crosshouse", "East Ayrshire"], ["Cumnock", "East Ayrshire"], ["Cunninghamhead", "North Ayrshire"], ["Dailly", "South Ayrshire"], ["Dalmellington", "East Ayrshire"], ["Dalry", "North Ayrshire"], ["Dalrymple", "East Ayrshire"], ["Darvel", "East Ayrshire"], ["Doonfoot", "South Ayrshire"], ["Dreghorn", "North Ayrshire"], ["Drongan", "East Ayrshire"], ["Dundonald", "South Ayrshire"], ["Dunlop", "East Ayrshire"], ["Dunure", "South Ayrshire"], ["Failford", "South Ayrshire"], ["Fairlie", "North Ayrshire"], ["Fenwick", "East Ayrshire"], ["Galston", "East Ayrshire"], ["Gatehead", "East Ayrshire"], ["Gateside", "North Ayrshire"], ["Girdle Toll", "North Ayrshire"], ["Girvan", "South Ayrshire"], ["Glenbuck", "East Ayrshire"], ["Glengarnock", "North Ayrshire"], ["Heathfield", "South Ayrshire"], ["Hollybush", "East Ayrshire"], ["Hurlford", "East Ayrshire"], ["Irvine", "North Ayrshire"], ["Kilbirnie", "North Ayrshire"], ["Kildonan (Arran)", "North Ayrshire"], ["Kilmarnock", "East Ayrshire"], ["Kilmaurs", "East Ayrshire"], ["Kilmory (Arran)", "North Ayrshire"], ["Kilwinning", "North Ayrshire"], ["Kirkmichael", "South Ayrshire"], ["Kirkoswald", "South Ayrshire"], ["Knockentiber", "East Ayrshire"], ["Lamlash (Arran)", "North Ayrshire"], ["Largs", "North Ayrshire"], ["Lendalfoot", "South Ayrshire"], ["Loans", "South Ayrshire"], ["Lochranza (Arran)", "North Ayrshire"], ["Logan", "East Ayrshire"], ["Longbar", "North Ayrshire"], ["Lugar", "East Ayrshire"], ["Lugton", "East Ayrshire"], ["Machrie (Arran)", "North Ayrshire"], ["Maidens", "South Ayrshire"], ["Mauchline", "East Ayrshire"], ["Maybole", "South Ayrshire"], ["Millport (Cumbrae)", "North Ayrshire"], ["Minishant", "South Ayrshire"], ["Monkton", "South Ayrshire"], ["Moscow", "East Ayrshire"], ["Mossblown", "South Ayrshire"], ["Muirkirk", "East Ayrshire"], ["Netherthird", "East Ayrshire"], ["New Cumnock", "East Ayrshire"], ["Newmilns", "East Ayrshire"], ["Ochiltree", "East Ayrshire"], ["Old Dailly", "South Ayrshire"], ["Patna", "East Ayrshire"], ["Perceton", "North Ayrshire"], ["Pinmore", "South Ayrshire"], ["Pinwherry", "South Ayrshire"], ["Pirnmill (Arran)", "North Ayrshire"], ["Portencross", "North Ayrshire"], ["Prestwick", "South Ayrshire"], ["Priestland", "East Ayrshire"], ["Rankinston", "East Ayrshire"], ["Saltcoats", "North Ayrshire"], ["Sannox (Arran)", "North Ayrshire"], ["Seamill", "North Ayrshire"], ["Shiskine (Arran)", "North Ayrshire"], ["Sinclairston", "East Ayrshire"], ["Skares", "East Ayrshire"], ["Skelmorlie", "North Ayrshire"], ["Sorn", "East Ayrshire"], ["Springside", "North Ayrshire"], ["Stair", "East Ayrshire"], ["Stevenston", "North Ayrshire"], ["Stewarton", "East Ayrshire"], ["Straiton", "South Ayrshire"], ["Symington", "South Ayrshire"], ["Tarbolton", "South Ayrshire"], ["Torranyard", "North Ayrshire"], ["Trabboch", "East Ayrshire"], ["Troon", "South Ayrshire"], ["Turnberry", "South Ayrshire"], ["Waterside (near Fenwick)", "East Ayrshire"], ["Waterside (near Patna)", "East Ayrshire"], ["West Kilbride", "North Ayrshire"], ["Whiting Bay (Arran)", "North Ayrshire"], ["Whitletts", "South Ayrshire"]];
+function townMatches(q) {
+  q = q.trim().toLowerCase(); if (!q) return [];
+  const starts = [], words = [];
+  AYR_TOWNS.forEach(t => { const n = t[0].toLowerCase();
+    if (n.startsWith(q)) starts.push(t); else if (n.split(/[\s(]+/).some(w => w.startsWith(q))) words.push(t); });
+  return starts.concat(words).slice(0, 8);
+}
+function drawTowns() {
+  const box = $('r-town-list'), input = $('r-town'), q = input.value;
+  const found = townMatches(q);
+  box.textContent = '';
+  const exact = found.length === 1 && found[0][0].toLowerCase() === q.trim().toLowerCase();
+  if (!q.trim() || exact) { box.hidden = true; input.setAttribute('aria-expanded', 'false'); return; }
+  found.forEach(t => {
+    const b = document.createElement('button'); b.type = 'button'; b.setAttribute('role', 'option');
+    b.innerHTML = '<span>' + esc(t[0]) + '</span><small>' + esc(t[1]) + '</small>';
+    b.addEventListener('mousedown', e => e.preventDefault());
+    b.addEventListener('click', () => { input.value = t[0]; box.hidden = true; input.setAttribute('aria-expanded', 'false'); });
+    box.appendChild(b);
+  });
+  if (!found.length) { const n = document.createElement('div'); n.className = 'town-none'; n.textContent = 'Not on our list? That’s fine, just type it in full.'; box.appendChild(n); }
+  box.hidden = false; input.setAttribute('aria-expanded', 'true');
+}
+$('r-town').addEventListener('input', drawTowns);
+$('r-town').addEventListener('focus', drawTowns);
+$('r-town').addEventListener('blur', () => setTimeout(() => { $('r-town-list').hidden = true; $('r-town').setAttribute('aria-expanded', 'false'); }, 150));
+$('r-town').addEventListener('keydown', e => { if (e.key !== 'Enter') return; e.preventDefault(); const first = $('r-town-list').querySelector('button'); if (first && !$('r-town-list').hidden) first.click(); });
+
+// ---------- search for a street or place (OpenStreetMap's free place search) ----------
+function findMsg(text, ok) { const m = $('r-find-msg'); m.textContent = text; m.hidden = !text; m.className = 'find-msg' + (ok ? ' ok' : ''); }
+function inArea(p) { return p.lat > 54 && p.lat < 57 && p.lng > -7 && p.lng < -2.5; }
+let lastFind = 0;
+async function findPlace() {
+  const q = $('r-find').value.trim(), list = $('r-find-list');
+  list.hidden = true; list.textContent = '';
+  if (q.length < 3) { findMsg('Type a street or place, e.g. High Street, Ayr.'); return; }
+  const wait = 1100 - (Date.now() - lastFind); if (wait > 0) await new Promise(r => setTimeout(r, wait));
+  lastFind = Date.now();
+  findMsg('Searching…');
+  let found = [];
+  try {
+    const url = 'https://nominatim.openstreetmap.org/search?format=jsonv2&addressdetails=1&limit=5&countrycodes=gb&bounded=1&viewbox=-5.45,56.0,-3.9,54.85&q=' + encodeURIComponent(q);
+    const res = await fetch(url, { headers: { 'Accept-Language': 'en-GB' } });
+    found = res.ok ? await res.json() : [];
+  } catch (e) { findMsg('Search is not working right now. Please tap the map instead.'); return; }
+  found = (found || []).filter(f => inArea({ lat: +f.lat, lng: +f.lon }));
+  if (!found.length) { findMsg('We couldn’t find that in Ayrshire. Try a street and town, e.g. High Street, Ayr, or tap the map.'); return; }
+  const label = f => { const a = f.address || {}; const parts = [f.name, a.road, a.suburb || a.village || a.town || a.city || a.hamlet, a.postcode ? a.postcode.split(' ')[0] : ''];
+    return [...new Set(parts.filter(Boolean))].join(', ') || String(f.display_name || '').split(',').slice(0, 3).join(','); };
+  const pick = f => {
+    whenMap().then(m => {
+      dropPin(f.lat, f.lon); m.setView([+f.lat, +f.lon], 17);
+      const a = f.address || {}, town = a.town || a.village || a.city || a.hamlet || '';
+      if (town && !$('r-town').value.trim()) $('r-town').value = town;
+      findMsg('Pin dropped: ' + label(f) + '. Tap the map to move it if you need to.', true);
+      list.hidden = true; list.textContent = '';
+    }, () => findMsg('The map could not be loaded. Your Town/Village is enough.'));
+  };
+  if (found.length === 1) return pick(found[0]);
+  findMsg('Which one?');
+  found.forEach(f => { const b = document.createElement('button'); b.type = 'button'; b.textContent = label(f); b.addEventListener('click', () => pick(f)); list.appendChild(b); });
+  list.hidden = false;
+}
+$('r-find-go').addEventListener('click', findPlace);
+$('r-find').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); findPlace(); } });
+
+// ---------- checking and sending ----------
+function clearErrors() {
+  document.querySelectorAll('#r-form .bad').forEach(b => b.classList.remove('bad'));
+  document.querySelectorAll('#r-form .field .err, #r-form .row .err').forEach(e => e.remove());
+  $('r-msg').hidden = true;
+}
+function fail(id, msg) { const box = $(id); box.classList.add('bad'); const s = document.createElement('span'); s.className = 'err'; s.textContent = msg; box.appendChild(s); return box; }
+function phoneDigits(p) { return String(p || '').replace(/[\s()\-.]/g, '').replace(/^\+44/, '0').replace(/^0044/, '0'); }
+function fakePhone(d) {
+  const rest = d.slice(2);
+  return /^(\d)\1+$/.test(rest) || /(\d)\1{6,}/.test(d) || /0123456|1234567|2345678|3456789|9876543|8765432|7654321/.test(d)
+    || /^07700900\d{3}$|^01632960\d{3}$|^01\d1496\d{4}$|^0[23]\d{2}4960\d{3}$/.test(d);
+}
+function ukPhone(p) { const d = phoneDigits(p); return /^(07[1-57-9]\d{8}|01\d{8,9}|0[23]\d{9})$/.test(d) && !fakePhone(d) ? d : null; }
+function phoneProblem(p) { const d = phoneDigits(p); if (!d) return 'Please add your contact number';
+  return /^(07[1-57-9]\d{8}|01\d{8,9}|0[23]\d{9})$/.test(d) ? (fakePhone(d) ? 'Please check your contact number' : '') : 'Please check your number. It should be a UK number, like 07700 123456'; }
+function emailOk(e) { return /^[^\s@]{1,64}@[^\s@]+\.[a-z]{2,}$/i.test(e); }
+const prettyNum = d => /^07\d{9}$/.test(d) ? d.slice(0, 5) + ' ' + d.slice(5) : /^0[23]\d{9}$/.test(d) ? d.slice(0, 3) + ' ' + d.slice(3, 7) + ' ' + d.slice(7) : d.slice(0, 5) + ' ' + d.slice(5);
+const today = () => { const d = new Date(); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); };
+
+$('r-form').addEventListener('submit', async e => {
+  e.preventDefault(); clearErrors();
+  let first = null; const note = b => { if (!first) first = b; };
+  const dog = val('dog'), what = val('what'), police = val('police');
+  if (!dog) { note(fail('f-dog', 'Please answer Yes or No')); first.scrollIntoView({ behavior: 'smooth', block: 'center' }); return; }
+  if (dog === 'yes') return;
+  if (!what) note(fail('f-what', 'Please choose what the search is for'));
+  if (policeNeeded(what) && !police) note(fail('f-police', 'Please tell us if the police know'));
+  if (policeNeeded(what) && police === 'no') return;
+  if (first) { first.scrollIntoView({ behavior: 'smooth', block: 'center' }); return; }
+  if (policeNeeded(what) && !val('vuln')) note(fail('f-vuln', 'Please answer: Yes, No or Not sure'));
+  if (waterAsked() && !val('water')) note(fail('f-water', 'Please answer: Yes, No or Don\u2019t know'));
+  if (policeNeeded(what) && $('r-ref').value.trim().length < 3) note(fail('f-ref', 'Please add the police incident or reference number'));
+  if ($('r-town').value.trim().length < 2) note(fail('f-town', 'Please add the Town/Village'));
+  if (pinLatLng && !inArea(pinLatLng)) note(fail('f-map', 'That pin is outside our area. Tap the map again.'));
+  if (!$('r-date').value) note(fail('f-when', 'Please add the date'));
+  else if ($('r-date').value > today()) note(fail('f-when', "The date can't be in the future"));
+  if ($('r-desc').value.trim().length < 5) note(fail('f-desc', 'Please add some details of the search'));
+  if (!$('r-name').value.trim()) note(fail('f-name', 'Please add your name'));
+  const phone = ukPhone($('r-phone').value);
+  if (!phone) note(fail('f-phone', phoneProblem($('r-phone').value)));
+  const email = $('r-email').value.trim();
+  if (!email) note(fail('f-email', 'Please add your email address'));
+  else if (!emailOk(email)) note(fail('f-email', 'Please check your email address'));
+  if (!$('r-consent').checked) note(fail('f-consent', 'Please tick so the drone team can contact you'));
+  if (first) { first.scrollIntoView({ behavior: 'smooth', block: 'center' }); return; }
+  if (confirmedPhone !== phone) { askPhone(phone, email); return; }
+
+  const btn = $('r-send'); btn.disabled = true; btn.textContent = 'Sending…';
+  const data = {
+    what, police: policeNeeded(what) ? police : undefined, vulnerable: policeNeeded(what) ? val('vuln') : undefined, policeRef: policeNeeded(what) ? $('r-ref').value.trim() : undefined,
+    town: $('r-town').value.trim(), date: $('r-date').value, time: $('r-time').value,
+    area: [...document.querySelectorAll('input[name="area"]:checked')].map(c => c.value),
+    waterSearched: waterAsked() ? val('water') : undefined,
+    details: $('r-desc').value.trim(), name: $('r-name').value.trim(), phone, email, consent: true,
+    website: $('r-web').value, tookMs: Date.now() - openedAt
+  };
+  if (pinLatLng) { data.lat = pinLatLng.lat; data.lng = pinLatLng.lng; }
+  try {
+    await submitDroneRequest(data);
+    $('t-police').hidden = $('t-photo').hidden = !policeNeeded(what);
+    sent = true;
+    location.hash = '#thanks';
+  } catch (err) {
+    const code = String((err && err.code) || '');
+    const m = $('r-msg');
+    m.textContent = /invalid-argument|resource-exhausted/.test(code) && err.message ? err.message
+      : 'Your request could not be sent. Check your signal and try again, or email lostdogsayrshiredrones@gmail.com.';
+    m.hidden = false; m.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+  btn.disabled = false; btn.textContent = 'Send request';
+});
+
+// "Is this your number?" before sending: a single wrong digit means we can't reach them.
+function askPhone(phone, email) {
+  $('pc-num').textContent = prettyNum(phone);
+  $('pc-email').textContent = 'and email ' + email;
+  $('phone-check').hidden = false; document.body.classList.add('map-open');
+  $('pc-yes').focus();
+}
+function closePhoneCheck() { $('phone-check').hidden = true; document.body.classList.remove('map-open'); }
+$('pc-yes').addEventListener('click', () => { confirmedPhone = ukPhone($('r-phone').value) || ''; closePhoneCheck(); $('r-form').requestSubmit ? $('r-form').requestSubmit() : $('r-send').click(); });
+$('pc-edit').addEventListener('click', () => { closePhoneCheck(); const i = $('r-phone'); i.scrollIntoView({ behavior: 'smooth', block: 'center' }); setTimeout(() => i.focus(), 300); });
+
+// A field's error message goes as soon as it is answered.
+$('r-form').addEventListener('input', e => { const box = e.target.closest('.field, .row'); if (!box || !box.classList.contains('bad')) return;
+  box.classList.remove('bad'); box.querySelectorAll('.err').forEach(x => x.remove()); });
+
+// ---------- start ----------
+setup();
+show();
+</script>
+</body>
+</html>

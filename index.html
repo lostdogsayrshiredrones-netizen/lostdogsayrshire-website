@@ -114,7 +114,7 @@
   <ellipse cx="32" cy="43" rx="15" ry="12"/><ellipse cx="10" cy="29" rx="6.5" ry="8.5" transform="rotate(-20 10 29)"/>
   <ellipse cx="24" cy="14" rx="6.5" ry="9"/><ellipse cx="40" cy="14" rx="6.5" ry="9"/><ellipse cx="54" cy="29" rx="6.5" ry="8.5" transform="rotate(20 54 29)"/>
 </g></defs></svg>
-<nav class="groups" aria-label="Groups run by Lost Dogs Ayrshire"><div><span class="g on" aria-current="page"><svg viewBox="0 0 64 60" aria-hidden="true"><use href="#paw-shape"/></svg>Lost Dogs Ayrshire</span><a class="g" href="https://www.facebook.com/share/1FeJGns5ZZ/" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true" style="fill:none"><circle cx="5" cy="6" r="2.5"/><circle cx="19" cy="6" r="2.5"/><circle cx="5" cy="18" r="2.5"/><circle cx="19" cy="18" r="2.5"/><path d="M7 8l3 3M17 8l-3 3M7 16l3-3M17 16l-3-3"/><rect x="9.5" y="9.5" width="5" height="5" rx="1.2"/></svg>Drone Search &amp; Rescue Ayrshire</a><a class="g" href="https://www.facebook.com/share/g/1DXGPMpfTR/" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21C5 16 2 12.5 2 8.5 2 5.5 4.3 3 7.2 3c2 0 3.6 1 4.8 2.7C13.2 4 14.8 3 16.8 3 19.7 3 22 5.5 22 8.5c0 4-3 7.5-10 12.5z"/></svg>Paws Of Kindness Ayrshire</a></div></nav>
+<nav class="groups" aria-label="Groups run by Lost Dogs Ayrshire"><div><span class="g on" aria-current="page"><svg viewBox="0 0 64 60" aria-hidden="true"><use href="#paw-shape"/></svg>Lost Dogs Ayrshire</span><a class="g" href="dsra.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true" style="fill:none"><circle cx="5" cy="6" r="2.5"/><circle cx="19" cy="6" r="2.5"/><circle cx="5" cy="18" r="2.5"/><circle cx="19" cy="18" r="2.5"/><path d="M7 8l3 3M17 8l-3 3M7 16l3-3M17 16l-3-3"/><rect x="9.5" y="9.5" width="5" height="5" rx="1.2"/></svg>Drone Search &amp; Rescue Ayrshire</a><a class="g" href="https://www.facebook.com/share/g/1DXGPMpfTR/" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21C5 16 2 12.5 2 8.5 2 5.5 4.3 3 7.2 3c2 0 3.6 1 4.8 2.7C13.2 4 14.8 3 16.8 3 19.7 3 22 5.5 22 8.5c0 4-3 7.5-10 12.5z"/></svg>Paws Of Kindness Ayrshire</a></div></nav>
 <main>
   <header class="hero">
     <svg class="paw left" viewBox="0 0 64 60" aria-hidden="true"><use href="#paw-shape"/></svg>
@@ -175,11 +175,24 @@ function ldaVideo(f) {
   } else if (/facebook\.com\/.*(\/videos\/|\/reel\/|\/watch\/?\?v=)/i.test(url) || /facebook\.com\/reel\//i.test(url)) {
     frame = 'https://www.facebook.com/plugins/video.php?href=' + encodeURIComponent(url) + '&show_text=false&width=560'; tall = /\/reel\//i.test(url);
   }
-  var fbish = /facebook|fb\.watch/i.test(url);
+  var fbish = /facebook|fb\.watch/i.test(url), site = fbish ? 'Facebook' : 'YouTube';
+  // Nothing from Facebook or YouTube loads until the visitor taps play: their players can set their own
+  // cookies, and tapping is the visitor choosing to watch. So no cookie banner is needed.
   return '<div class="tf-video">' + (f.label ? '<b class="tf-cap">' + ldaEsc(f.label) + '</b>' : '') +
-    (frame ? '<div class="tf-frame' + (tall ? ' tall' : '') + '"><iframe src="' + ldaEsc(frame) + '" title="' + ldaEsc(f.label || 'Video') + '" loading="lazy" allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share" allowfullscreen></iframe></div>' : '') +
-    '<a class="tf-watch" href="' + ldaEsc(url) + '" target="_blank" rel="noopener">&#9654; Watch on ' + (fbish ? 'Facebook' : 'YouTube') + '</a></div>';
+    (frame ? '<button type="button" class="tf-frame tf-tap' + (tall ? ' tall' : '') + '" data-src="' + ldaEsc(frame) + '" data-title="' + ldaEsc(f.label || 'Video') + '">' +
+      '<span class="tf-play" aria-hidden="true">&#9654;</span><span class="tf-tap-text">Tap to play video</span>' +
+      '<span class="tf-tap-note">This plays the video from ' + site + ', which may set its own cookies.</span></button>' : '') +
+    '<a class="tf-watch" href="' + ldaEsc(url) + '" target="_blank" rel="noopener">&#9654; Watch on ' + site + '</a></div>';
 }
+// Tap to play: only now is the Facebook or YouTube player loaded.
+document.addEventListener('click', function (e) {
+  var b = e.target.closest && e.target.closest('.tf-tap');
+  if (!b) return;
+  var src = b.getAttribute('data-src'), f = document.createElement('div');
+  f.className = 'tf-frame' + (b.classList.contains('tall') ? ' tall' : '');
+  f.innerHTML = '<iframe src="' + ldaEsc(src + (src.indexOf('?') < 0 ? '?' : '&') + 'autoplay=1') + '" title="' + ldaEsc(b.getAttribute('data-title') || 'Video') + '" allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share" allowfullscreen></iframe>';
+  b.parentNode.replaceChild(f, b);
+});
 // "# Heading" starts a box, "- " is a bullet, **bold**, web links. Videos go under the heading they were given.
 function ldaTopicHtml(body, files, topicId) {
   function inline(t) { return ldaEsc(t).replace(/\*\*(.+?)\*\*/g, '<b>$1</b>').replace(/(https?:\/\/[^\s<]+[^\s<.,;:!?)])/g, '<a href="$1" target="_blank" rel="noopener">$1</a>'); }

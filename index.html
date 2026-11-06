@@ -86,6 +86,28 @@
   .warn .w2 { font-size: 1.7rem; font-weight: 900; color: #fff; letter-spacing: .02em; }
   .warn .w3 { margin-top: 2px; font-size: 1rem; font-weight: 700; }
   /* Footer: the same on every page of the website */
+  /* Get the app: below the email address, away from the important buttons. Only shown on phones/tablets (or where the browser can install it). */
+  .getapp { display: flex; align-items: center; gap: 12px; width: 100%; margin: 8px 0 14px; padding: 14px 44px 14px 14px; position: relative; text-align: left;
+    border: 2px solid rgba(253,249,15,.55); border-radius: 16px; background: rgba(42,11,120,.55); color: #fff; font: inherit; cursor: pointer; }
+  .getapp[hidden] { display: none; }
+  .getapp::after { content: ""; position: absolute; right: 18px; top: 50%; width: 9px; height: 9px; border-top: 3px solid #fdf90f; border-right: 3px solid #fdf90f; transform: translateY(-50%) rotate(45deg); }
+  .getapp svg { width: 30px; height: 30px; flex-shrink: 0; }
+  .getapp span { display: flex; flex-direction: column; line-height: 1.3; }
+  .getapp b { font-size: 1.08rem; font-weight: 900; color: #fdf90f; }
+  .getapp small { font-size: .86rem; font-weight: 600; color: #e9e2ff; }
+  .sheet-bg { position: fixed; inset: 0; z-index: 50; display: flex; align-items: flex-end; justify-content: center; background: rgba(20,4,70,.6); }
+  .sheet-bg[hidden] { display: none; }
+  .sheet { width: 100%; max-width: 520px; max-height: 92vh; overflow: auto; background: #fff; color: #2a0b78; border-radius: 22px 22px 0 0;
+    padding: 18px 18px calc(22px + env(safe-area-inset-bottom)); text-align: left; line-height: 1.4; }
+  .sheet .bar { width: 44px; height: 5px; border-radius: 3px; background: #d8d0f5; margin: 0 auto 12px; }
+  .sheet h2 { margin: 0 0 4px; font-size: 1.35rem; font-weight: 900; color: #5220c4; text-align: center; }
+  .sheet .sub { margin: 0 0 14px; text-align: center; font-weight: 600; color: #5b4a99; font-size: .95rem; }
+  .sheet .step { display: flex; align-items: center; gap: 12px; padding: 12px; border-radius: 14px; background: #f3efff; margin: 0 0 10px; font-weight: 700; font-size: 1rem; }
+  .sheet .n { flex: 0 0 30px; height: 30px; border-radius: 50%; background: #5220c4; color: #fdf90f; display: flex; align-items: center; justify-content: center; font-weight: 900; }
+  .sheet .ic { flex: 0 0 34px; height: 34px; border-radius: 9px; background: #fff; border: 1px solid #ddd; display: flex; align-items: center; justify-content: center; font-size: .8rem; font-weight: 900; color: #1a73e8; }
+  .sheet .ic svg { width: 22px; height: 22px; stroke: #1a73e8; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  .sheet .done { display: block; width: 100%; margin-top: 6px; padding: 14px; border: 0; border-radius: 14px; background: #fdf90f; color: #5220c4; font: inherit; font-weight: 900; font-size: 1.05rem; text-transform: uppercase; cursor: pointer; }
+  .sheet .note { margin: 10px 0 0; font-size: .85rem; color: #6b5fa0; text-align: center; }
   .site-foot { margin-top: 12px; text-align: center; font-size: .9rem; color: #e9e2ff; line-height: 1.7; }
   .site-foot .mail { display: inline-block; margin-bottom: 6px; font-size: 1.15rem; font-weight: 900; color: #fff; text-decoration: none; }
   .site-foot .mail span { color: #fdf90f; }
@@ -154,8 +176,14 @@
 
   <section class="topics" id="topics" hidden><h2>Advice &amp; seasonal tips</h2><p>Keeping your dog safe</p><div id="topic-links"></div></section>
 
-  <footer class="site-foot"><a class="mail" href="mailto:lostdogsayrshire@gmail.com">Email us: <span>lostdogsayrshire@gmail.com</span></a><br><a href="report-privacy.html">Privacy</a><br><span class="copy">&copy; 2026 Lost Dogs Ayrshire. All rights reserved.</span></footer>
+  <footer class="site-foot"><a class="mail" href="mailto:lostdogsayrshire@gmail.com">Email us: <span>lostdogsayrshire@gmail.com</span></a>
+    <button class="getapp" id="getapp" type="button" hidden><svg viewBox="0 0 24 24" fill="none" stroke="#fdf90f" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="6" y="2" width="12" height="20" rx="2.5"/><path d="M12 7v7M9 11l3 3 3-3"/></svg><span><b>Get the app</b><small>Add us to your phone&rsquo;s home screen. Free, no app store needed.</small></span></button>
+    <a href="report-privacy.html">Privacy</a><br><span class="copy">&copy; 2026 Lost Dogs Ayrshire. All rights reserved.</span></footer>
 </main>
+<div class="sheet-bg" id="getapp-sheet" hidden><div class="sheet" role="dialog" aria-modal="true" aria-labelledby="getapp-title"><div class="bar" aria-hidden="true"></div>
+  <h2 id="getapp-title"></h2><p class="sub">A few quick taps, and we&rsquo;re on your home screen like an app.</p>
+  <div id="getapp-steps"></div>
+  <button class="done" id="getapp-done" type="button">Got it</button><p class="note" id="getapp-note"></p></div></div>
 <script>
 // Advice topics (Fireworks, Stormy weather…), written by LDA admins in the volunteer app.
 // Read through the publicTopics function. Shared by the home page and topic.html.
@@ -226,6 +254,46 @@ function ldaTopicHtml(body, files, topicId) {
   }).join('');
 }
 
+
+// ---- Get the app (add the website to the home screen) ----
+(function () {
+  var btn = document.getElementById('getapp'), bg = document.getElementById('getapp-sheet');
+  var standalone = (window.matchMedia && matchMedia('(display-mode: standalone)').matches) || navigator.standalone === true;
+  if (standalone) return;                                   // already on their home screen
+  var ua = navigator.userAgent || '';
+  var ios = /iPhone|iPad|iPod/.test(ua) || (/Macintosh/.test(ua) && 'ontouchend' in document);
+  var android = /Android/.test(ua), prompt = null;
+  var SHARE = '<svg viewBox="0 0 24 24"><path d="M12 3v12M8 7l4-4 4 4"/><path d="M6 11H5v10h14V11h-1"/></svg>';
+  var PLUS = '<svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M12 8v8M8 12h8"/></svg>';
+  var DOTS = '<svg viewBox="0 0 24 24"><circle cx="12" cy="5" r="1.3"/><circle cx="12" cy="12" r="1.3"/><circle cx="12" cy="19" r="1.3"/></svg>';
+  function step(n, ic, text) { return '<div class="step"><span class="n">' + n + '</span><span class="ic">' + ic + '</span><span>' + text + '</span></div>'; }
+  function open() {
+    var t = document.getElementById('getapp-title'), st = document.getElementById('getapp-steps'), note = document.getElementById('getapp-note');
+    if (ios) {
+      t.textContent = 'Add us to your ' + (/iPad/.test(ua) || /Macintosh/.test(ua) ? 'iPad' : 'iPhone');
+      st.innerHTML = step(1, SHARE, 'Tap the <b>Share</b> button (the square with an arrow). On newer iPhones it may be under the <b>&middot;&middot;&middot;</b> button first')
+        + step(2, PLUS, 'Scroll down and tap <b>Add to Home Screen</b>') + step(3, 'Add', 'Tap <b>Add</b> in the top corner');
+      note.textContent = 'Can\u2019t see Add to Home Screen? Open this page in Safari and try again.';
+    } else {
+      t.textContent = 'Add us to your phone';
+      st.innerHTML = step(1, DOTS, 'Tap the <b>&#8942;</b> menu at the top of the screen') + step(2, PLUS, 'Tap <b>Add to Home screen</b> (or <b>Install app</b>)') + step(3, 'Add', 'Tap <b>Install</b> or <b>Add</b>');
+      note.textContent = 'In Samsung Internet, the menu is the \u2261 button at the bottom.';
+    }
+    bg.hidden = false; document.getElementById('getapp-done').focus();
+  }
+  function close() { bg.hidden = true; btn.focus(); }
+  btn.addEventListener('click', function () {
+    if (prompt) { var p = prompt; prompt = null; p.prompt(); p.userChoice.then(function (c) { if (c && c.outcome === 'accepted') btn.hidden = true; }).catch(function () {}); return; }
+    open();
+  });
+  document.getElementById('getapp-done').addEventListener('click', close);
+  bg.addEventListener('click', function (e) { if (e.target === bg) close(); });
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && !bg.hidden) close(); });
+  // Android/Chrome: the browser's own "Install app" box, when it offers one.
+  window.addEventListener('beforeinstallprompt', function (e) { e.preventDefault(); prompt = e; btn.hidden = false; });
+  window.addEventListener('appinstalled', function () { btn.hidden = true; });
+  if (ios || android) btn.hidden = false;                   // computers only see it if the browser can install it
+})();
 ldaTopics().then(function (list) {
   if (!list.length) return;
   document.getElementById('topic-links').innerHTML = list.map(function (t) {

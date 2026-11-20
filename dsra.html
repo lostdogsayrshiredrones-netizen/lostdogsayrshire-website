@@ -164,7 +164,7 @@
   .photo-status.ok { color: #7dff9c; }
   .photo-no { display: flex; flex-direction: column; gap: 4px; margin-top: 10px; padding: 12px 14px; border-radius: 12px; background: var(--red); font-weight: 700; }
   .photo-no b { font-size: 1.05rem; }
-  #f-town, #f-breed { position: relative; }
+  #f-town { position: relative; }
   .town-list { display: flex; flex-direction: column; margin-top: 6px; border-radius: 12px; overflow: hidden; background: #fff; border: 3px solid var(--yellow); }
   .town-list button { display: flex; justify-content: space-between; gap: 10px; padding: 12px 14px; border: 0; border-top: 1px solid #e3dcf7; background: #fff; color: #1c1530; font: inherit; font-size: 1rem; font-weight: 800; text-align: left; }
   .town-list button:first-child { border-top: 0; }
@@ -394,7 +394,7 @@
     <ul>
       <li><span class="i">✈️</span><span>Our pilots fly under <b>UK Civil Aviation Authority (CAA)</b> rules.</span></li>
       <li><span class="i">🚫</span><span>Some areas, such as near <b>Glasgow Prestwick Airport</b>, need permission before we can fly.</span></li>
-      <li><span class="i">👮</span><span>For a missing person, we only fly when <b>Police Scotland</b> have asked us or agreed.</span></li>
+      <li><span class="i">👮</span><span>For a missing person or vulnerable adult, we only fly when <b>Police Scotland</b> have asked us or agreed.</span></li>
       <li><span class="i">✋</span><span><b>Seen something during a search?</b> Tell the team or the police straight away. If it&rsquo;s a dog, please keep back and don&rsquo;t try to catch it.</span></li>
       <li><span class="i">🛑</span><span>Please <b>don&rsquo;t fly your own drone</b> near a search. Two drones in the same sky is dangerous, and our pilots would have to land.</span></li>
     </ul>
@@ -427,13 +427,14 @@
       <span class="f" id="q-what">What is the search for?</span>
       <div class="yesno three" role="radiogroup" aria-labelledby="q-what">
         <label><input type="radio" name="what" value="person"><span>A missing person</span></label>
+        <label><input type="radio" name="what" value="vulnerable"><span>A vulnerable adult who has left a safe place</span></label>
         <label><input type="radio" name="what" value="animal"><span>A missing animal (not a dog or cat)</span></label>
         <label><input type="radio" name="what" value="other"><span>Something else where a drone could help</span></label>
       </div>
     </div>
 
     <div class="field" id="f-police" hidden>
-      <div class="police"><b>Has this been reported to the police?</b><span>Police Scotland lead every search for a missing person. We can only fly when the police have asked us or agreed.</span></div>
+      <div class="police"><b>Has this been reported to the police?</b><span>Police Scotland lead every search for a missing person or vulnerable adult. We can only fly when the police have asked us or agreed.</span></div>
       <div class="yesno" role="radiogroup" aria-label="Has this been reported to the police?">
         <label><input type="radio" name="police" value="yes" id="r-police-yes"><span>Yes, the police know</span></label>
         <label><input type="radio" name="police" value="no" id="r-police-no"><span>Not yet</span></label>
@@ -444,16 +445,6 @@
       <b>Call 999 now</b>
       <span>Please report the person missing to Police Scotland straight away. Once the police know, you can come back and send this request.</span>
       <a class="dcall" href="tel:999">Call 999</a>
-    </div>
-
-    <div class="field qbox" id="f-vuln" hidden>
-      <span class="f" id="q-vuln">Is the person vulnerable?</span>
-      <span class="hint" style="color:#fff;margin-top:-6px">For example, a child, someone living with dementia or Alzheimer&rsquo;s, or someone with a learning disability.</span>
-      <div class="yesno three" role="radiogroup" aria-labelledby="q-vuln">
-        <label><input type="radio" name="vuln" value="yes" id="r-vuln-yes"><span>Yes</span></label>
-        <label><input type="radio" name="vuln" value="no" id="r-vuln-no"><span>No</span></label>
-        <label><input type="radio" name="vuln" value="unsure" id="r-vuln-unsure"><span>Not sure</span></label>
-      </div>
     </div>
 
     <div class="field" id="f-ref" hidden>
@@ -492,18 +483,8 @@
         <label><input type="checkbox" name="area" value="Woodland">Woodland</label>
         <label><input type="checkbox" name="area" value="Farmland">Farmland</label>
         <label><input type="checkbox" name="area" value="Coast or river">Coast or river</label>
-        <label><input type="checkbox" name="area" value="Loch or reservoir">Loch or reservoir</label>
         <label><input type="checkbox" name="area" value="Moor or hills">Moor or hills</label>
         <label><input type="checkbox" name="area" value="Town">Town</label>
-      </div>
-    </div>
-
-    <div class="field qbox" id="f-water" hidden>
-      <span class="f" id="q-water">To your knowledge, have Fire and Rescue or the Coastguard searched the water?</span>
-      <div class="yesno three" role="radiogroup" aria-labelledby="q-water">
-        <label><input type="radio" name="water" value="yes" id="r-water-yes"><span>Yes</span></label>
-        <label><input type="radio" name="water" value="no" id="r-water-no"><span>No</span></label>
-        <label><input type="radio" name="water" value="unknown" id="r-water-unknown"><span>Don&rsquo;t know</span></label>
       </div>
     </div>
 
@@ -548,7 +529,7 @@
     <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#1d8a3a" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M7.5 12.5l3 3 6-6.5"/></svg>
     <h2>Thank you for submitting your request</h2>
     <p>A drone pilot will carry out an assessment and will assist where possible.</p>
-    <p id="t-police" hidden>As your request is in relation to a missing person, the pilot will speak with <b>Police Scotland</b>.</p>
+    <p id="t-police" hidden>As your request is in relation to a missing person or vulnerable adult, the pilot will speak with <b>Police Scotland</b>.</p>
     <div class="photo-ready" id="t-photo" hidden>
       <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#8a6500" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg>
       <span><b>Please have a recent photo ready, and a description of what they were last wearing.</b> If we get the go-ahead, the pilot will ask you for these. We need to know who we are looking for before we can fly.</span>
@@ -599,14 +580,12 @@ document.addEventListener('click', e => { const a = e.target.closest('a[href="#"
 // ---------- the form changes with the answers ----------
 const WHAT = {
   person:     { date: 'Date last seen', desc: 'Details of the search', ph: 'Where they were last seen, and anything the pilots should know' },
+  vulnerable: { date: 'Date last seen', desc: 'Details of the search', ph: 'Where they were last seen, and anything the pilots should know' },
   animal:     { date: 'Date last seen', desc: 'Details of the search', ph: 'What kind of animal, what it looks like, and anything the pilots should know' },
   other:      { date: 'Date', desc: 'Details of the search', ph: 'What you need help with, and anything the pilots should know' }
 };
 const val = name => { const c = document.querySelector('input[name="' + name + '"]:checked'); return c ? c.value : ''; };
-const policeNeeded = w => w === 'person';
-// Missing person near water: ask whether Fire and Rescue or the Coastguard have searched it, so the pilots know.
-const WATER = ['Coast or river', 'Loch or reservoir'];
-const waterAsked = () => policeNeeded(val('what')) && WATER.some(w => document.querySelector('input[name="area"][value="' + w + '"]').checked);
+const policeNeeded = w => w === 'person' || w === 'vulnerable';
 function setup() {
   const dog = val('dog'), what = val('what'), police = val('police'), form = $('r-form');
   form.classList.toggle('dog-yes', dog === 'yes');
@@ -616,14 +595,13 @@ function setup() {
   const stopped = dog === 'no' && policeNeeded(what) && police === 'no';
   form.classList.toggle('police-no', stopped);
   $('q-police-no').hidden = !stopped;
-  $('f-ref').hidden = $('f-vuln').hidden = !(dog === 'no' && policeNeeded(what) && police === 'yes');
+  $('f-ref').hidden = !(dog === 'no' && policeNeeded(what) && police === 'yes');
   const ready = dog === 'no' && what && (!policeNeeded(what) || police === 'yes');
   ['f-town', 'f-map', 'f-when', 'f-area', 'f-desc', 'f-name', 'f-phone', 'f-email', 'f-consent', 'f-robot', 'r-send'].forEach(id => { $(id).hidden = !ready; });
-  $('f-water').hidden = !(ready && waterAsked());
   if (what) { $('r-date-label').textContent = WHAT[what].date; $('r-desc-label').textContent = WHAT[what].desc; $('r-desc').placeholder = WHAT[what].ph; }
   if (ready) setTimeout(startMap, 30);
 }
-document.querySelectorAll('input[name="dog"], input[name="what"], input[name="police"], input[name="vuln"], input[name="area"], input[name="water"]').forEach(i => i.addEventListener('change', () => { clearErrors(); setup(); }));
+document.querySelectorAll('input[name="dog"], input[name="what"], input[name="police"]').forEach(i => i.addEventListener('change', () => { clearErrors(); setup(); }));
 function resetForm() {
   $('r-form').reset(); sent = false; confirmedPhone = ''; pinLatLng = null; openedAt = Date.now();
   if (marker && map) { map.removeLayer(marker); marker = null; }
@@ -778,8 +756,6 @@ $('r-form').addEventListener('submit', async e => {
   if (policeNeeded(what) && !police) note(fail('f-police', 'Please tell us if the police know'));
   if (policeNeeded(what) && police === 'no') return;
   if (first) { first.scrollIntoView({ behavior: 'smooth', block: 'center' }); return; }
-  if (policeNeeded(what) && !val('vuln')) note(fail('f-vuln', 'Please answer: Yes, No or Not sure'));
-  if (waterAsked() && !val('water')) note(fail('f-water', 'Please answer: Yes, No or Don\u2019t know'));
   if (policeNeeded(what) && $('r-ref').value.trim().length < 3) note(fail('f-ref', 'Please add the police incident or reference number'));
   if ($('r-town').value.trim().length < 2) note(fail('f-town', 'Please add the Town/Village'));
   if (pinLatLng && !inArea(pinLatLng)) note(fail('f-map', 'That pin is outside our area. Tap the map again.'));
@@ -798,10 +774,9 @@ $('r-form').addEventListener('submit', async e => {
 
   const btn = $('r-send'); btn.disabled = true; btn.textContent = 'Sending…';
   const data = {
-    what, police: policeNeeded(what) ? police : undefined, vulnerable: policeNeeded(what) ? val('vuln') : undefined, policeRef: policeNeeded(what) ? $('r-ref').value.trim() : undefined,
+    what, police: policeNeeded(what) ? police : undefined, policeRef: policeNeeded(what) ? $('r-ref').value.trim() : undefined,
     town: $('r-town').value.trim(), date: $('r-date').value, time: $('r-time').value,
     area: [...document.querySelectorAll('input[name="area"]:checked')].map(c => c.value),
-    waterSearched: waterAsked() ? val('water') : undefined,
     details: $('r-desc').value.trim(), name: $('r-name').value.trim(), phone, email, consent: true,
     website: $('r-web').value, tookMs: Date.now() - openedAt
   };

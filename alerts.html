@@ -1,0 +1,236 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#5220c4">
+<link rel="apple-touch-icon" sizes="180x180" href="icon-192.png">
+<link rel="manifest" href="manifest.json">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="LDA">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>Missing dog alerts · Lost Dogs Ayrshire</title>
+<meta name="description" content="Get a notification on your phone when a dog goes missing near you in Ayrshire.">
+<link rel="icon" type="image/png" href="icon-192.png">
+<style>
+  :root { --purple: #5220c4; --deep: #3e12a3; --ink: #2a0b78; --yellow: #fdf90f; --soft: #e9e2ff; --muted: #6b5f8f; --line: #e3dcf7; --ok: #1d7a35; --red: #c8201e; }
+  * { box-sizing: border-box; }
+  html { background: var(--purple); }
+  [hidden] { display: none !important; }
+  body { margin: 0; color: #fff; font: 17px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+  main { max-width: 560px; margin: 0 auto; padding: calc(18px + env(safe-area-inset-top)) 16px calc(28px + env(safe-area-inset-bottom)); display: flex; flex-direction: column; gap: 14px; }
+  .top { display: flex; justify-content: space-between; }
+  .pill { padding: 8px 18px; border: 3px solid var(--yellow); border-radius: 999px; color: var(--yellow); font-weight: 800; text-decoration: none; }
+  h1 { margin: 4px 0 0; padding: 10px 12px 8px; background: var(--yellow); color: var(--purple); border-radius: 12px; font-size: 1.5rem; font-weight: 900; text-align: center; text-transform: uppercase; }
+  .lead { margin: 0; text-align: center; color: var(--soft); }
+  .card { background: #fff; color: var(--ink); border-radius: 20px; padding: 18px 16px; display: flex; flex-direction: column; gap: 12px; }
+  .card h2 { margin: 0; font-size: 1.15rem; font-weight: 900; }
+  .small { font-size: .88rem; color: var(--muted); line-height: 1.4; }
+  .step { font-size: .8rem; font-weight: 900; letter-spacing: .08em; text-transform: uppercase; color: var(--purple); }
+  .mode { display: flex; gap: 12px; align-items: center; width: 100%; text-align: left; border: 2.5px solid var(--line); background: #fff; border-radius: 18px; padding: 15px 14px; font: inherit; color: var(--ink); cursor: pointer; }
+  .mode b { display: block; font-size: 1.1rem; font-weight: 900; }
+  .mode .s { display: block; font-size: .88rem; color: var(--muted); margin-top: 2px; line-height: 1.35; }
+  .mode .chev { margin-left: auto; font-size: 1.4rem; color: var(--purple); font-weight: 900; }
+  .mode.on { border-color: var(--purple); background: #f4f0ff; }
+  .mode.dim { opacity: .6; padding: 11px 14px; } .mode.dim .s { display: none; }
+  .opt { display: flex; align-items: center; gap: 12px; border: 2px solid var(--line); border-radius: 16px; padding: 13px 14px; cursor: pointer; background: #fff; font: inherit; color: var(--ink); text-align: left; width: 100%; }
+  .opt.on { border-color: var(--purple); background: #f4f0ff; }
+  .box { flex: none; width: 28px; height: 28px; border-radius: 8px; border: 2.5px solid var(--purple); display: grid; place-items: center; font-weight: 900; color: #fff; }
+  .opt.on .box { background: var(--purple); }
+  .opt b { display: block; font-size: 1.05rem; }
+  .opt .s { font-size: .82rem; color: var(--muted); }
+  label.f { font-weight: 800; font-size: .95rem; }
+  select { width: 100%; font: inherit; font-size: 1.05rem; padding: 13px 12px; border-radius: 14px; border: 2px solid var(--line); background: #fff; color: var(--ink); }
+  .chips { display: flex; gap: 8px; flex-wrap: wrap; }
+  .chips button { flex: 1 1 60px; white-space: nowrap; border: 2px solid var(--line); background: #fff; border-radius: 14px; padding: 12px 4px; font: inherit; font-weight: 900; font-size: .95rem; color: var(--purple); cursor: pointer; }
+  .chips button.on { background: var(--purple); color: #fff; border-color: var(--purple); }
+  .toggle { display: flex; align-items: center; gap: 14px; justify-content: space-between; border-top: 2px solid var(--line); padding-top: 12px; }
+  .sw { flex: none; width: 58px; height: 34px; border-radius: 20px; background: #d6d0e6; position: relative; border: 0; cursor: pointer; transition: background .2s; }
+  .sw::after { content: ""; position: absolute; top: 3px; left: 3px; width: 28px; height: 28px; border-radius: 50%; background: #fff; box-shadow: 0 2px 4px rgba(0,0,0,.25); transition: left .2s; }
+  .sw.on { background: var(--ok); } .sw.on::after { left: 27px; }
+  .go { border: 0; border-radius: 18px; background: linear-gradient(180deg, #fffe7a 0%, #fdf90f 55%, #f1ec00 100%); color: var(--purple); font: inherit; font-weight: 900; font-size: 1.2rem; padding: 17px;
+    box-shadow: inset 0 2px 0 rgba(255,255,255,.8), 0 6px 0 #b3ae00; cursor: pointer; width: 100%; }
+  .go:disabled { opacity: .55; cursor: default; }
+  .msg { text-align: center; font-size: .9rem; color: var(--muted); min-height: 1.2em; }
+  .msg.bad { color: var(--red); font-weight: 700; }
+  .alt { border: 2px solid var(--purple); background: transparent; color: var(--purple); border-radius: 14px; padding: 12px; font: inherit; font-weight: 800; cursor: pointer; }
+  .alt.red { border-color: var(--red); color: var(--red); }
+  .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .done { background: #ecfdf3; border: 2px solid #17b26a; }
+  .done h2 { color: var(--ok); }
+  .note { background: rgba(255,255,255,.1); border: 2px solid rgba(253,249,15,.5); border-radius: 16px; padding: 14px; font-size: .9rem; line-height: 1.45; color: var(--soft); }
+  .note b { color: var(--yellow); }
+  .iphone { background: var(--yellow); color: var(--ink); border-radius: 16px; padding: 14px 16px; }
+  .iphone h2 { margin: 0 0 6px; font-size: 1.1rem; }
+  .iphone ol { margin: 0; padding-left: 22px; } .iphone li { margin: 4px 0; }
+  .lbl { font-size: .8rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: var(--yellow); text-align: center; margin-top: 6px; }
+  .lock { border-radius: 30px; padding: 18px 12px 20px; background: linear-gradient(160deg, #1b1040 0%, #3b1a8a 55%, #6b2ea8 100%); display: grid; gap: 10px; }
+  .nt { background: rgba(245,242,255,.88); color: #1a1230; border-radius: 18px; padding: 12px; display: grid; grid-template-columns: 38px 1fr; gap: 10px; align-items: start; }
+  .nt img { width: 38px; height: 38px; border-radius: 9px; }
+  .nt .h { font-size: .78rem; color: #5d5670; text-transform: uppercase; }
+  .nt .ti { font-weight: 800; font-size: .95rem; }
+  .nt .bd { font-size: .9rem; line-height: 1.35; }
+  button:focus-visible, select:focus-visible, a:focus-visible { outline: 3px solid var(--yellow); outline-offset: 2px; }
+  .site-foot { margin-top: 12px; text-align: center; font-size: .9rem; color: #e9e2ff; line-height: 1.7; }
+  .site-foot .mail { display: inline-block; margin-bottom: 6px; font-size: 1.15rem; font-weight: 900; color: #fff; text-decoration: none; }
+  .site-foot .mail span { color: #fdf90f; }
+  .site-foot a { color: #fdf90f; }
+  @media (display-mode: standalone) { main { padding-top: calc(38px + env(safe-area-inset-top)); } }
+  @media (prefers-reduced-motion: reduce) { .sw, .sw::after { transition: none; } }
+</style>
+</head>
+<body>
+<main>
+  <div class="top"><a class="pill" href="./">&#8592; Back</a><a class="pill" href="./">&#8962; Home</a></div>
+  <h1>Missing dog alerts</h1>
+  <p class="lead">Get a notification on your phone when a dog goes missing near you.</p>
+
+  <div class="iphone" id="iphone" hidden>
+    <h2>On iPhone, add us to your home screen first</h2>
+    <ol><li>Tap the <b>Share</b> button at the bottom of Safari.</li><li>Tap <b>Add to Home Screen</b>, then <b>Add</b>.</li><li>Open <b>LDA</b> from your home screen, tap <b>Missing dog alerts</b>, and turn them on there.</li></ol>
+  </div>
+  <div class="iphone" id="nosupport" hidden>
+    <h2>Alerts can’t be set up in this browser</h2>
+    <p style="margin:0">Please open this page in Chrome or Safari on your phone. On iPhone you need iOS 16.4 or later.</p>
+  </div>
+
+  <div class="card" id="setup">
+    <div class="step">Step 1 · How would you like your alerts?</div>
+    <button class="mode" id="tArea" type="button"><span><b>By council area</b><span class="s">North, South or East Ayrshire – pick one, two or all three</span></span><span class="chev">›</span></button>
+    <button class="mode" id="tTown" type="button"><span><b>By distance from my town</b><span class="s">Dogs missing within 5, 10, 15 or 25 miles of your town</span></span><span class="chev">›</span></button>
+    <div class="step" id="step2" hidden>Step 2 · Your choices</div>
+    <div id="areaPane" hidden style="display:grid;gap:8px"><div class="small">Tick one, two or all three.</div><div id="areas" style="display:grid;gap:8px"></div></div>
+    <div id="townPane" hidden style="display:grid;gap:10px">
+      <label class="f" for="town">My town or village</label><select id="town"></select>
+      <label class="f">Alert me about dogs missing within</label><div class="chips" id="miles"></div>
+      <div class="small">We only keep the town you choose – never your exact location.</div>
+    </div>
+    <div id="rest" hidden style="display:grid;gap:12px">
+      <div class="toggle"><div><b style="font-size:1.05rem">Home safe updates</b><div class="small">Also tell me when a dog I was alerted about is found safe</div></div><button class="sw on" id="safe" type="button" aria-label="Home safe updates" aria-pressed="true"></button></div>
+      <button class="go" id="turnOn" type="button">Turn on alerts</button>
+      <div class="msg" id="msg"></div>
+    </div>
+  </div>
+
+  <div class="card done" id="done" hidden>
+    <h2>Alerts are on</h2>
+    <div id="summary" style="font-size:1.02rem;line-height:1.45"></div>
+    <div class="row2"><button class="alt" id="change" type="button">Change</button><button class="alt red" id="off" type="button">Turn off alerts</button></div>
+    <div class="msg" id="msg2"></div>
+  </div>
+
+  <div class="lbl">How your alerts will look</div>
+  <div class="lock">
+    <div class="nt"><img alt="" src="icon-192.png"><div><div class="h">Lost Dogs Ayrshire</div><div class="ti">Missing dog – South Ayrshire</div><div class="bd">Border Collie, last seen near Girvan. Tap to see it and tell us if you’ve seen it.</div></div></div>
+    <div class="nt"><img alt="" src="icon-192.png"><div><div class="h">Lost Dogs Ayrshire</div><div class="ti">Home safe</div><div class="bd">The Border Collie missing near Girvan is home safe. Thank you for sharing and looking out.</div></div></div>
+  </div>
+  <div class="note">Tapping an alert opens the dog on our website, where you can <b>tap the map</b> if you’ve seen it. Alerts never include a dog’s name. Phones can delay notifications, so please keep following our <b>Facebook Page</b> too.</div>
+  <div class="note">You can change or turn off your alerts here at any time. See our <a href="report-privacy.html#alerts" style="color:var(--yellow)">privacy notice</a>.</div>
+
+  <footer class="site-foot"><a class="mail" href="mailto:lostdogsayrshire@gmail.com">Email us: <span>lostdogsayrshire@gmail.com</span></a><br><a href="./">Home</a> · <a href="report-privacy.html">Privacy</a><br><span class="copy">&copy; 2026 Lost Dogs Ayrshire. All rights reserved.</span></footer>
+</main>
+<script type="module">
+const FB = 'https://www.gstatic.com/firebasejs/10.14.1/';
+const CONFIG = { apiKey: "AIzaSyBvsSYYymjt0h9v9cynw2_oophP0BNG0I8", authDomain: "lost-dogs-ayrshire.firebaseapp.com", projectId: "lost-dogs-ayrshire",
+  storageBucket: "lost-dogs-ayrshire.firebasestorage.app", messagingSenderId: "302116971454", appId: "1:302116971454:web:e336d94d271ee433410fef" };
+const VAPID_KEY = 'BJMQdVWQJwp5eKgFjPXH8AHzeNm1XWgkqUNFtoqhaAZjqmLvfuXJhwfW7kZJaeXjH88BINJxjEMmtHQvBhuq4JQ';
+// Must match the list in the Firebase functions (alertsSave).
+const TOWNS = { 'North Ayrshire': ['Ardrossan','Beith','Brodick (Arran)','Dalry','Dreghorn','Fairlie','Irvine','Kilbirnie','Kilwinning','Lamlash (Arran)','Largs','Millport (Cumbrae)','Saltcoats','Skelmorlie','Springside','Stevenston','West Kilbride'],
+  'South Ayrshire': ['Alloway','Annbank','Ayr','Ballantrae','Barr','Colmonell','Coylton','Dailly','Dundonald','Dunure','Girvan','Kirkmichael','Maybole','Monkton','Mossblown','Prestwick','Straiton','Symington','Tarbolton','Troon'],
+  'East Ayrshire': ['Auchinleck','Catrine','Crosshouse','Cumnock','Dalmellington','Dalrymple','Darvel','Drongan','Galston','Hurlford','Kilmarnock','Kilmaurs','Mauchline','New Cumnock','Newmilns','Patna','Stewarton'] };
+const AREAS = [['North Ayrshire', 'Irvine, Kilwinning, the Three Towns, Largs, Arran…'], ['South Ayrshire', 'Ayr, Prestwick, Troon, Maybole, Girvan…'], ['East Ayrshire', 'Kilmarnock, Cumnock, Stewarton, the Irvine Valley…']];
+const KEY = 'lda-alerts';
+const $ = id => document.getElementById(id);
+const st = { mode: null, areas: [], town: 'Ayr', miles: 10, safe: true };
+let saved = null; try { saved = JSON.parse(localStorage.getItem(KEY) || 'null'); } catch (e) {}
+
+const isIOS = /iPhone|iPad|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+const standalone = matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
+const canPush = 'serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window;
+const needsHomeScreen = isIOS && !standalone;
+if (needsHomeScreen) $('iphone').hidden = false; else if (!canPush) $('nosupport').hidden = false;
+
+// ---- Firebase, loaded only when needed ----
+let kit = null;
+async function tools() {
+  if (kit) return kit;
+  const [{ initializeApp }, fns, msg] = await Promise.all([import(FB + 'firebase-app.js'), import(FB + 'firebase-functions.js'), import(FB + 'firebase-messaging.js')]);
+  const app = initializeApp(CONFIG), f = fns.getFunctions(app, 'europe-west1');
+  const registration = await navigator.serviceWorker.register('/firebase-messaging-sw.js');
+  kit = { save: fns.httpsCallable(f, 'alertsSave'), remove: fns.httpsCallable(f, 'alertsRemove'), msg, messaging: msg.getMessaging(app), registration };
+  return kit;
+}
+const token = async () => { const k = await tools(); return k.msg.getToken(k.messaging, { vapidKey: VAPID_KEY, serviceWorkerRegistration: k.registration }); };
+const choices = () => st.mode === 'area' ? { mode: 'area', areas: st.areas.slice(), safe: st.safe } : { mode: 'town', town: st.town, miles: st.miles, safe: st.safe };
+function remember(v) { saved = v; try { v ? localStorage.setItem(KEY, JSON.stringify(v)) : localStorage.removeItem(KEY); } catch (e) {} }
+function summary(c) {
+  const list = a => a.length > 1 ? a.slice(0, -1).join(', ') + ' and ' + a[a.length - 1] : a[0];
+  return (c.mode === 'area' ? 'Missing dogs in <b>' + list(c.areas) + '</b>' : 'Missing dogs within <b>' + c.miles + ' miles of ' + c.town + '</b>') + '<br>Home safe updates: <b>' + (c.safe ? 'on' : 'off') + '</b>';
+}
+
+// ---- Drawing the choices ----
+function draw() {
+  for (const [id, m] of [['tArea', 'area'], ['tTown', 'town']]) { const b = $(id); b.className = 'mode' + (st.mode === m ? ' on' : st.mode ? ' dim' : ''); b.querySelector('.chev').textContent = st.mode === m ? '✓' : '›'; b.setAttribute('aria-pressed', st.mode === m); }
+  $('step2').hidden = !st.mode; $('rest').hidden = !st.mode; $('areaPane').hidden = st.mode !== 'area'; $('townPane').hidden = st.mode !== 'town';
+  $('areas').innerHTML = AREAS.map(([a, s]) => { const on = st.areas.includes(a); return `<button type="button" class="opt ${on ? 'on' : ''}" data-a="${a}" aria-pressed="${on}"><span class="box">${on ? '✓' : ''}</span><span><b>${a}</b><span class="s">${s}</span></span></button>`; }).join('');
+  $('areas').querySelectorAll('.opt').forEach(b => b.onclick = () => { const i = st.areas.indexOf(b.dataset.a); i >= 0 ? st.areas.splice(i, 1) : st.areas.push(b.dataset.a); draw(); });
+  $('miles').innerHTML = [5, 10, 15, 25].map(m => `<button type="button" class="${st.miles === m ? 'on' : ''}" data-m="${m}">${m} miles</button>`).join('');
+  $('miles').querySelectorAll('button').forEach(b => b.onclick = () => { st.miles = +b.dataset.m; draw(); });
+  $('safe').className = 'sw' + (st.safe ? ' on' : ''); $('safe').setAttribute('aria-pressed', st.safe);
+  const ready = st.mode === 'town' || st.areas.length > 0;
+  $('turnOn').disabled = !ready && !needsHomeScreen;
+  if (!$('msg').classList.contains('bad')) $('msg').textContent = !ready ? 'Tick at least one council area.' : needsHomeScreen ? '' : saved ? 'Saving changes your alerts.' : 'Your phone will ask permission to show notifications.';
+  $('turnOn').textContent = saved ? 'Save my alerts' : 'Turn on alerts';
+}
+$('town').innerHTML = Object.entries(TOWNS).map(([g, l]) => `<optgroup label="${g}">${l.map(t => `<option>${t}</option>`).join('')}</optgroup>`).join('');
+$('town').onchange = e => { st.town = e.target.value; };
+$('tArea').onclick = () => { st.mode = 'area'; draw(); $('step2').scrollIntoView({ behavior: 'smooth', block: 'start' }); };
+$('tTown').onclick = () => { st.mode = 'town'; draw(); $('step2').scrollIntoView({ behavior: 'smooth', block: 'start' }); };
+$('safe').onclick = () => { st.safe = !st.safe; draw(); };
+const say = (t, bad) => { $('msg').textContent = t; $('msg').classList.toggle('bad', !!bad); };
+
+function showDone() { $('summary').innerHTML = summary(saved); $('setup').hidden = true; $('done').hidden = false; }
+function showSetup() { $('setup').hidden = false; $('done').hidden = true; draw(); }
+
+$('turnOn').onclick = async () => {
+  if (needsHomeScreen) { $('iphone').scrollIntoView({ behavior: 'smooth', block: 'center' }); say('Add us to your home screen first (see the yellow box above).', true); return; }
+  if (!canPush) { say('Alerts can’t be set up in this browser.', true); return; }
+  // Ask straight away, while the tap still counts (iPhone needs this).
+  const perm = Notification.permission === 'granted' ? 'granted' : await Notification.requestPermission();
+  if (perm !== 'granted') { say('Notifications are switched off for our website. Turn them on in your phone’s settings, then try again.', true); return; }
+  $('turnOn').disabled = true; say('Turning on…');
+  try {
+    const t = await token(); if (!t) throw new Error('no token');
+    const c = choices();
+    await (await tools()).save({ token: t, ...c });
+    if (saved && saved.token && saved.token !== t) (await tools()).remove({ token: saved.token }).catch(() => {});
+    remember({ ...c, token: t }); say(''); showDone();
+  } catch (err) {
+    console.warn('Alerts not turned on:', err);
+    say('Sorry, alerts couldn’t be turned on just now. Please check your signal and try again.', true);
+  } finally { $('turnOn').disabled = false; }
+};
+$('change').onclick = () => { Object.assign(st, { mode: saved.mode, areas: (saved.areas || []).slice(), town: saved.town || 'Ayr', miles: saved.miles || 10, safe: saved.safe !== false }); $('town').value = st.town; showSetup(); };
+$('off').onclick = async () => {
+  $('off').disabled = true; $('msg2').textContent = 'Turning off…';
+  try {
+    const k = await tools();
+    if (saved && saved.token) await k.remove({ token: saved.token });
+    await k.msg.deleteToken(k.messaging).catch(() => {});
+    remember(null); Object.assign(st, { mode: null, areas: [] }); $('msg2').textContent = ''; showSetup(); say('Alerts turned off. You can turn them on again any time.');
+  } catch (err) { console.warn(err); $('msg2').textContent = 'Sorry, that didn’t work. Please check your signal and try again.'; }
+  finally { $('off').disabled = false; }
+};
+
+// Already on? Show them, and quietly keep this phone's notification address up to date.
+if (saved && canPush && Notification.permission === 'granted') {
+  showDone();
+  token().then(t => { if (t && t !== saved.token) { const c = { ...saved }; delete c.token; return tools().then(k => k.save({ token: t, ...c })).then(() => { remember({ ...saved, token: t }); }); } }).catch(() => {});
+} else {
+  if (saved && canPush && Notification.permission !== 'granted') say('Notifications have been switched off for our website on this phone. Turn them on again below.', true);
+  showSetup();
+}
+</script>
+</body>
+</html>

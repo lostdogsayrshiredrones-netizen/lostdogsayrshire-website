@@ -206,9 +206,10 @@ const ALL_TOWNS = Object.entries(TOWNS).flatMap(([c, l]) => l.map(t => [t, c]));
 const norm = x => x.toLowerCase().replace(/[^a-z ]/g, '').trim();
 function townList() {
   const q = norm($('town').value), box = $('townList');
-  if (!q || (st.town && $('town').value === st.town)) { box.hidden = true; return; }
+  if (!q) { box.hidden = true; return; }
   const hits = ALL_TOWNS.filter(([t]) => norm(t).split(' ').some(w => w.startsWith(q)) || norm(t).startsWith(q))
     .sort((x, y) => (norm(y[0]).startsWith(q) - norm(x[0]).startsWith(q)) || x[0].localeCompare(y[0])).slice(0, 6);
+  if (st.town && hits.length === 1 && hits[0][0] === st.town) { box.hidden = true; return; }
   box.innerHTML = hits.length ? hits.map(([t, c]) => `<button type="button" data-t="${t}">${t}<span>${c}</span></button>`).join('')
     : '<div class="none">No match. Try the nearest bigger town.</div>';
   box.querySelectorAll('button').forEach(b => b.onclick = () => pickTown(b.dataset.t));
@@ -219,15 +220,22 @@ $('town').oninput = () => {
   const exact = ALL_TOWNS.find(([t]) => norm(t) === norm($('town').value));
   st.town = exact ? exact[0] : ''; $('town').classList.toggle('ok', !!exact); townList(); draw();
 };
-$('town').onfocus = () => { if ($('town').value && !st.town) townList(); setTimeout(() => $('town').scrollIntoView({ behavior: 'smooth', block: 'start' }), 300); };
+// One calm move: put the box near the top so the list fits above the keyboard. No smooth scrolling,
+// which fights the iPhone's own keyboard scroll and makes the page jump about.
+const toTop = el => { const y = el.getBoundingClientRect().top + scrollY - 70; if (Math.abs(y - scrollY) > 8) scrollTo({ top: y, behavior: 'instant' }); };
+$('town').onfocus = () => {
+  if ($('town').value && !st.town) townList();
+  toTop($('town'));
+  const vv = window.visualViewport; if (vv) { const once = () => { vv.removeEventListener('resize', once); toTop($('town')); }; vv.addEventListener('resize', once); setTimeout(() => vv.removeEventListener('resize', once), 900); }
+};
 $('town').onkeydown = e => { if (e.key === 'Enter') { e.preventDefault(); const b = $('townList').querySelector('button'); if (!$('townList').hidden && b) pickTown(b.dataset.t); } };
-$('tArea').onclick = () => { st.mode = 'area'; draw(); $('step2').scrollIntoView({ behavior: 'smooth', block: 'start' }); };
-$('tTown').onclick = () => { st.mode = 'town'; draw(); $('step2').scrollIntoView({ behavior: 'smooth', block: 'start' }); };
+$('tArea').onclick = () => { const was = st.mode; st.mode = 'area'; draw(); if (was !== 'area') toTop($('step2')); };
+$('tTown').onclick = () => { const was = st.mode; st.mode = 'town'; draw(); if (was !== 'town') toTop($('step2')); };
 $('safe').onclick = () => { st.safe = !st.safe; draw(); };
 const say = (t, bad) => { $('msg').textContent = t; $('msg').classList.toggle('bad', !!bad); };
 
-function showDone() { $('summary').innerHTML = summary(saved); $('setup').hidden = true; $('done').hidden = false; }
-function showSetup() { $('setup').hidden = false; $('done').hidden = true; draw(); }
+function showDone() { scrollTo({ top: 0, behavior: 'instant' }); $('summary').innerHTML = summary(saved); $('setup').hidden = true; $('done').hidden = false; }
+function showSetup() { scrollTo({ top: 0, behavior: 'instant' }); $('setup').hidden = false; $('done').hidden = true; draw(); }
 
 $('turnOn').onclick = async () => {
   if (needsHomeScreen) { $('iphone').scrollIntoView({ behavior: 'smooth', block: 'center' }); say('Add us to your home screen first (see the yellow box above).', true); return; }
@@ -235,6 +243,7 @@ $('turnOn').onclick = async () => {
   // Ask straight away, while the tap still counts (iPhone needs this).
   const perm = Notification.permission === 'granted' ? 'granted' : await Notification.requestPermission();
   if (perm !== 'granted') { say('Notifications are switched off for our website. Turn them on in your phone’s settings, then try again.', true); return; }
+  if (document.activeElement) document.activeElement.blur();
   $('turnOn').disabled = true; say('Turning on…');
   try {
     const t = await token(); if (!t) throw new Error('no token');
